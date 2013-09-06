@@ -1,0 +1,44 @@
+package protobufs;
+
+enum LossFunction {
+  LOGIT = 1;
+}
+
+message Feature {
+  optional int64 feature = 1;
+  optional double value = 2;
+}
+
+message TreeNode {
+  // feature to split on
+  optional int64 feature = 1;
+  // value to split on
+  optional double splitValue = 2;
+
+  optional TreeNode left = 3;
+  optional TreeNode right = 4;
+
+  optional double leafValue = 5;
+}
+
+message Forest {
+  repeated TreeNode trees = 1;
+}
+
+message SplittingConstraints {
+  optional int64 maximumLevels = 1;
+  optional double minimumAverageGain = 2;
+  optional int64 minimumSamplesAtLeaf = 3;
+
+  optional double featuresConsideredFraction = 4;
+}
+
+message PruningConstraints {
+  optional int64 crossValidationFolds = 1;
+}
+
+message ForestConfig {
+  optional SplittingConstraints splittingConstraints = 1;
+  optional LossFunction lossFunction = 2;
+  optional int64 numWeakLearners = 3;
+}
