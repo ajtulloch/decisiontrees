@@ -16,14 +16,17 @@ var _ = math.Inf
 type LossFunction int32
 
 const (
-	LossFunction_LOGIT LossFunction = 1
+	LossFunction_LOGIT                    LossFunction = 1
+	LossFunction_LEAST_ABSOLUTE_DEVIATION LossFunction = 2
 )
 
 var LossFunction_name = map[int32]string{
 	1: "LOGIT",
+	2: "LEAST_ABSOLUTE_DEVIATION",
 }
 var LossFunction_value = map[string]int32{
-	"LOGIT": 1,
+	"LOGIT":                    1,
+	"LEAST_ABSOLUTE_DEVIATION": 2,
 }
 
 func (x LossFunction) Enum() *LossFunction {
@@ -177,15 +180,15 @@ func (m *SplittingConstraints) GetFeaturesConsideredFraction() float64 {
 }
 
 type PruningConstraints struct {
-	CrossValidationFolds *float64 `protobuf:"fixed64,1,opt,name=crossValidationFolds" json:"crossValidationFolds,omitempty"`
-	XXX_unrecognized     []byte   `json:"-"`
+	CrossValidationFolds *int64 `protobuf:"varint,1,opt,name=crossValidationFolds" json:"crossValidationFolds,omitempty"`
+	XXX_unrecognized     []byte `json:"-"`
 }
 
 func (m *PruningConstraints) Reset()         { *m = PruningConstraints{} }
 func (m *PruningConstraints) String() string { return proto.CompactTextString(m) }
 func (*PruningConstraints) ProtoMessage()    {}
 
-func (m *PruningConstraints) GetCrossValidationFolds() float64 {
+func (m *PruningConstraints) GetCrossValidationFolds() int64 {
 	if m != nil && m.CrossValidationFolds != nil {
 		return *m.CrossValidationFolds
 	}

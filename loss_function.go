@@ -4,24 +4,22 @@ import (
 	"fmt"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"math"
+	"sort"
 )
 
 type LossFunction interface {
-	GetGradient(label float64, prediction float64) float64
+	GetGradient(e *Example) float64
 	GetPrior(e Examples) float64
 	GetLeafWeight(e Examples) float64
 }
 
-type L2LossFunction struct{}
-
-func (l L2LossFunction) GetGradient(label float64, prediction float64) float64 {
-	return 2 * (label - prediction)
+type LogitLoss struct {
+	evaluator Evaluator
 }
 
-type LogitLoss struct{}
-
-func (l LogitLoss) GetGradient(label float64, prediction float64) float64 {
-	return 2 * label / (1 + math.Exp(2*label*prediction))
+func (l LogitLoss) GetGradient(e *Example) float64 {
+	prediction := l.evaluator.evaluate(e.Features)
+	return 2 * e.Label / (1 + math.Exp(2*e.Label*prediction))
 }
 
 func (l LogitLoss) GetPrior(e Examples) float64 {
@@ -42,20 +40,44 @@ func (l LogitLoss) GetLeafWeight(e Examples) float64 {
 	return numerator / denominator
 }
 
-type LeastAbsoluteDeviationLoss struct{}
+type LeastAbsoluteDeviationLoss struct {
+	evaluator Evaluator
+}
 
-func (l LeastAbsoluteDeviationLoss) GetGradient(label float64, prediction float64) float64 {
-	if label-prediction > 0 {
+func (l LeastAbsoluteDeviationLoss) GetPrior(e Examples) float64 {
+	// Return the median label
+	sort.Sort(LabelSorter{e})
+	return e[e.Len()/2].Label
+}
+
+func (l LeastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
+	residuals := sort.Float64Slice(make([]float64, e.Len()))
+	for i, _ := range e {
+		residuals[i] = e[i].Label - l.evaluator.evaluate(e[i].Features)
+	}
+	residuals.Sort()
+	return residuals[e.Len()/2]
+}
+
+func (l LeastAbsoluteDeviationLoss) GetGradient(e *Example) float64 {
+	prediction := l.evaluator.evaluate(e.Features)
+	if e.Label-prediction > 0 {
 		return 1.0
 	} else {
 		return -1.0
 	}
 }
 
-func NewLossFunction(l pb.LossFunction) LossFunction {
+func NewLossFunction(l pb.LossFunction, evaluator Evaluator) LossFunction {
 	switch l {
 	case pb.LossFunction_LOGIT:
-		return LogitLoss{}
+		return LogitLoss{
+			evaluator: evaluator,
+		}
+	case pb.LossFunction_LEAST_ABSOLUTE_DEVIATION:
+		return LeastAbsoluteDeviationLoss{
+			evaluator: evaluator,
+		}
 	}
 	panic(fmt.Sprint("Unknown enum: ", l.String()))
 }

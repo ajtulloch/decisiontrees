@@ -23,17 +23,17 @@ func constructLoss(e Examples) *lossState {
 
 func (l *lossState) addExample(e *Example) {
 	l.numExamples += 1
-	delta := e.Label - l.averageLabel
+	delta := e.WeightedLabel - l.averageLabel
 	l.averageLabel += delta / float64(l.numExamples)
-	newDelta := e.Label - l.averageLabel
+	newDelta := e.WeightedLabel - l.averageLabel
 	l.sumSquaredDivergence += delta * newDelta
 }
 
 func (l *lossState) removeExample(e *Example) {
 	l.numExamples -= 1
-	delta := e.Label - l.averageLabel
+	delta := e.WeightedLabel - l.averageLabel
 	l.averageLabel -= delta / float64(l.numExamples)
-	newDelta := e.Label - l.averageLabel
+	newDelta := e.WeightedLabel - l.averageLabel
 	l.sumSquaredDivergence -= delta * newDelta
 }
 

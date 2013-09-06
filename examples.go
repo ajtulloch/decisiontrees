@@ -5,8 +5,9 @@ import (
 )
 
 type Example struct {
-	Label    float64
-	Features map[int64]float64
+	Label         float64
+	WeightedLabel float64
+	Features      map[int64]float64
 }
 
 func (e Example) asBool() bool {
@@ -74,6 +75,14 @@ func (e Examples) boostrapFeatures(size int) []int64 {
 
 func (e Examples) Swap(i int, j int) {
 	e[i], e[j] = e[j], e[i]
+}
+
+type LabelSorter struct {
+	Examples
+}
+
+func (l LabelSorter) Less(i int, j int) bool {
+	return l.Examples[i].Label < l.Examples[j].Label
 }
 
 type ExampleSorter struct {

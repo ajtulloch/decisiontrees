@@ -2,6 +2,7 @@ package protobufs;
 
 enum LossFunction {
   LOGIT = 1;
+  LEAST_ABSOLUTE_DEVIATION = 2;
 }
 
 message Feature {
