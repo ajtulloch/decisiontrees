@@ -11,7 +11,7 @@ func ConstructBoostingTree(e Examples, f pb.ForestConfig) *pb.Forest {
 	}
 
 	lossFunction := NewLossFunction(
-		f.GetLossFunction(),
+		f.GetLossFunctionConfig(),
 		NewFastForestEvaluator(forest))
 
 	// Initial prior
@@ -21,12 +21,9 @@ func ConstructBoostingTree(e Examples, f pb.ForestConfig) *pb.Forest {
 
 	for i := 1; i < int(f.GetNumWeakLearners()); i++ {
 		lossFunction := NewLossFunction(
-			f.GetLossFunction(),
+			f.GetLossFunctionConfig(),
 			NewFastForestEvaluator(forest))
-		for i, _ := range e {
-			e[i].WeightedLabel = lossFunction.GetGradient(e[i])
-		}
-
+		lossFunction.UpdateWeightedLabels(e)
 		weakLearner := (&RegressionSplitter{}).GenerateTree(e)
 		forest.Trees = append(forest.Trees, weakLearner)
 	}

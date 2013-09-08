@@ -3,6 +3,7 @@ package protobufs;
 enum LossFunction {
   LOGIT = 1;
   LEAST_ABSOLUTE_DEVIATION = 2;
+  HUBER = 3;
 }
 
 message Feature {
@@ -38,8 +39,13 @@ message PruningConstraints {
   optional int64 crossValidationFolds = 1;
 }
 
+message LossFunctionConfig {
+  optional LossFunction lossFunction = 1;
+  optional double huberAlpha = 2;
+}
+
 message ForestConfig {
   optional SplittingConstraints splittingConstraints = 1;
-  optional LossFunction lossFunction = 2;
+  optional LossFunctionConfig lossFunctionConfig = 2;
   optional int64 numWeakLearners = 3;
 }

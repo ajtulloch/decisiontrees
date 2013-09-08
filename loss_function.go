@@ -8,7 +8,7 @@ import (
 )
 
 type LossFunction interface {
-	GetGradient(e *Example) float64
+	UpdateWeightedLabels(e Examples)
 	GetPrior(e Examples) float64
 	GetLeafWeight(e Examples) float64
 }
@@ -17,9 +17,11 @@ type LogitLoss struct {
 	evaluator Evaluator
 }
 
-func (l LogitLoss) GetGradient(e *Example) float64 {
-	prediction := l.evaluator.evaluate(e.Features)
-	return 2 * e.Label / (1 + math.Exp(2*e.Label*prediction))
+func (l LogitLoss) UpdateWeightedLabels(e Examples) {
+	for _, ex := range e {
+		prediction := l.evaluator.evaluate(ex.Features)
+		ex.WeightedLabel = 2 * ex.Label / (1 + math.Exp(2*ex.Label*prediction))
+	}
 }
 
 func (l LogitLoss) GetPrior(e Examples) float64 {
@@ -59,17 +61,76 @@ func (l LeastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
 	return residuals[e.Len()/2]
 }
 
-func (l LeastAbsoluteDeviationLoss) GetGradient(e *Example) float64 {
-	prediction := l.evaluator.evaluate(e.Features)
-	if e.Label-prediction > 0 {
-		return 1.0
-	} else {
-		return -1.0
+func (l LeastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
+	for _, ex := range e {
+		prediction := l.evaluator.evaluate(ex.Features)
+		if ex.Label-prediction > 0 {
+			ex.WeightedLabel = 1.0
+		} else {
+			ex.WeightedLabel = -1.0
+		}
 	}
 }
 
-func NewLossFunction(l pb.LossFunction, evaluator Evaluator) LossFunction {
-	switch l {
+type HuberLoss struct {
+	huberAlpha float64
+	evaluator  Evaluator
+
+	// Somewhat janky
+	lastDeltaM float64
+}
+
+func (h HuberLoss) GetPrior(e Examples) float64 {
+	// Return the median label
+	sort.Sort(LabelSorter{e})
+	return e[e.Len()/2].Label
+}
+
+func (h HuberLoss) UpdateWeightedLabels(e Examples) {
+	residuals := sort.Float64Slice(make([]float64, e.Len()))
+	for i, ex := range e {
+		residuals[i] = ex.Label - h.evaluator.evaluate(ex.Features)
+	}
+	residuals.Sort()
+	delta := residuals[int64(float64(e.Len())*h.huberAlpha)]
+	for _, ex := range e {
+		divergence := ex.Label - h.evaluator.evaluate(ex.Features)
+		if divergence <= delta {
+			ex.WeightedLabel = divergence
+		} else {
+			ex.WeightedLabel = delta * divergence / math.Abs(divergence)
+		}
+	}
+}
+
+func (h HuberLoss) GetLeafWeight(e Examples) float64 {
+	residuals := sort.Float64Slice(make([]float64, e.Len()))
+	for i, ex := range e {
+		residuals[i] = ex.Label - h.evaluator.evaluate(ex.Features)
+	}
+	residuals.Sort()
+	medianResidual := residuals[e.Len()/2]
+
+	innerDistribution := 0.0
+	for _, ex := range e {
+		residualDelta :=
+			(ex.Label - h.evaluator.evaluate(ex.Features)) -
+				medianResidual
+
+		if residualDelta == 0.0 {
+			continue
+		}
+
+		innerDistribution +=
+			residualDelta / math.Abs(residualDelta) *
+				math.Min(h.lastDeltaM, math.Abs(residualDelta))
+	}
+
+	return medianResidual + innerDistribution/float64(e.Len())
+}
+
+func NewLossFunction(l *pb.LossFunctionConfig, evaluator Evaluator) LossFunction {
+	switch l.GetLossFunction() {
 	case pb.LossFunction_LOGIT:
 		return LogitLoss{
 			evaluator: evaluator,
@@ -77,6 +138,11 @@ func NewLossFunction(l pb.LossFunction, evaluator Evaluator) LossFunction {
 	case pb.LossFunction_LEAST_ABSOLUTE_DEVIATION:
 		return LeastAbsoluteDeviationLoss{
 			evaluator: evaluator,
+		}
+	case pb.LossFunction_HUBER:
+		return HuberLoss{
+			huberAlpha: l.GetHuberAlpha(),
+			evaluator:  evaluator,
 		}
 	}
 	panic(fmt.Sprint("Unknown enum: ", l.String()))

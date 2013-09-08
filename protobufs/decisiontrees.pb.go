@@ -18,15 +18,18 @@ type LossFunction int32
 const (
 	LossFunction_LOGIT                    LossFunction = 1
 	LossFunction_LEAST_ABSOLUTE_DEVIATION LossFunction = 2
+	LossFunction_HUBER                    LossFunction = 3
 )
 
 var LossFunction_name = map[int32]string{
 	1: "LOGIT",
 	2: "LEAST_ABSOLUTE_DEVIATION",
+	3: "HUBER",
 }
 var LossFunction_value = map[string]int32{
 	"LOGIT":                    1,
 	"LEAST_ABSOLUTE_DEVIATION": 2,
+	"HUBER":                    3,
 }
 
 func (x LossFunction) Enum() *LossFunction {
@@ -195,9 +198,33 @@ func (m *PruningConstraints) GetCrossValidationFolds() int64 {
 	return 0
 }
 
+type LossFunctionConfig struct {
+	LossFunction     *LossFunction `protobuf:"varint,1,opt,name=lossFunction,enum=protobufs.LossFunction" json:"lossFunction,omitempty"`
+	HuberAlpha       *float64      `protobuf:"fixed64,2,opt,name=huberAlpha" json:"huberAlpha,omitempty"`
+	XXX_unrecognized []byte        `json:"-"`
+}
+
+func (m *LossFunctionConfig) Reset()         { *m = LossFunctionConfig{} }
+func (m *LossFunctionConfig) String() string { return proto.CompactTextString(m) }
+func (*LossFunctionConfig) ProtoMessage()    {}
+
+func (m *LossFunctionConfig) GetLossFunction() LossFunction {
+	if m != nil && m.LossFunction != nil {
+		return *m.LossFunction
+	}
+	return 0
+}
+
+func (m *LossFunctionConfig) GetHuberAlpha() float64 {
+	if m != nil && m.HuberAlpha != nil {
+		return *m.HuberAlpha
+	}
+	return 0
+}
+
 type ForestConfig struct {
 	SplittingConstraints *SplittingConstraints `protobuf:"bytes,1,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
-	LossFunction         *LossFunction         `protobuf:"varint,2,opt,name=lossFunction,enum=protobufs.LossFunction" json:"lossFunction,omitempty"`
+	LossFunctionConfig   *LossFunctionConfig   `protobuf:"bytes,2,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
 	NumWeakLearners      *int64                `protobuf:"varint,3,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
 	XXX_unrecognized     []byte                `json:"-"`
 }
@@ -213,11 +240,11 @@ func (m *ForestConfig) GetSplittingConstraints() *SplittingConstraints {
 	return nil
 }
 
-func (m *ForestConfig) GetLossFunction() LossFunction {
-	if m != nil && m.LossFunction != nil {
-		return *m.LossFunction
+func (m *ForestConfig) GetLossFunctionConfig() *LossFunctionConfig {
+	if m != nil {
+		return m.LossFunctionConfig
 	}
-	return 0
+	return nil
 }
 
 func (m *ForestConfig) GetNumWeakLearners() int64 {
