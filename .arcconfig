@@ -1,4 +1,6 @@
 {
   "project_id" : "Decision Trees",
-  "conduit_uri" : "http://phabricator.tullo.ch/"
+  "conduit_uri" : "http://phabricator.tullo.ch/",
+  "git.default-relative-commit": "HEAD^",
+  "arc.feature.start.default": "origin/master"
 }
