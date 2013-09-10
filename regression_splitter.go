@@ -3,7 +3,6 @@ package decisiontrees
 import (
 	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
-	"sort"
 	"sync"
 )
 
@@ -39,7 +38,7 @@ func (l *lossState) removeExample(e *Example) {
 
 type RegressionSplitter struct {
 	lossFunction         LossFunction
-	splittingConstraints pb.SplittingConstraints
+	splittingConstraints *pb.SplittingConstraints
 }
 
 func (c *RegressionSplitter) shouldSplit(examples Examples, bestGain float64, currentLevel int64) bool {
@@ -66,7 +65,9 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 
 	for _, feature := range examples.getFeatures() {
 		// TODO(tulloch) - parallelize this sort
-		sort.Sort(ExampleSorter{examples, feature})
+		By(func(e1, e2 *Example) bool {
+			return e1.Features[feature] < e2.Features[feature]
+		}).Sort(examples)
 		for index, example := range examples {
 			func() {
 				if index == 0 {
@@ -94,7 +95,9 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 	}
 
 	if c.shouldSplit(examples, bestGain, currentLevel) {
-		sort.Sort(ExampleSorter{examples, bestFeature})
+		By(func(e1, e2 *Example) bool {
+			return e1.Features[bestFeature] < e2.Features[bestFeature]
+		}).Sort(examples)
 
 		tree := &pb.TreeNode{
 			Feature:    proto.Int64(bestFeature),

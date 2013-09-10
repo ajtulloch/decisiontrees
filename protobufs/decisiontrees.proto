@@ -31,12 +31,16 @@ message SplittingConstraints {
   optional int64 maximumLevels = 1;
   optional double minimumAverageGain = 2;
   optional int64 minimumSamplesAtLeaf = 3;
-
   optional double featuresConsideredFraction = 4;
 }
 
 message PruningConstraints {
   optional int64 crossValidationFolds = 1;
+}
+
+message InfluenceTrimmingConfig {
+  optional double alpha = 1;
+  optional int64 warmupRounds = 2;
 }
 
 message LossFunctionConfig {
@@ -45,7 +49,8 @@ message LossFunctionConfig {
 }
 
 message ForestConfig {
-  optional SplittingConstraints splittingConstraints = 1;
-  optional LossFunctionConfig lossFunctionConfig = 2;
-  optional int64 numWeakLearners = 3;
+  optional int64 numWeakLearners = 1;
+  optional SplittingConstraints splittingConstraints = 2;
+  optional LossFunctionConfig lossFunctionConfig = 3;
+  optional InfluenceTrimmingConfig influenceTrimmingConfig = 4;
 }

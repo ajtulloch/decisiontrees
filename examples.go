@@ -2,6 +2,7 @@ package decisiontrees
 
 import (
 	"math/rand"
+	"sort"
 )
 
 type Example struct {
@@ -18,10 +19,6 @@ func (e Example) asBool() bool {
 }
 
 type Examples []*Example
-
-func (e Examples) Len() int {
-	return len(e)
-}
 
 func (e Examples) boostrapSample(size int) Examples {
 	subsample := make([]*Example, size)
@@ -41,7 +38,7 @@ func (e Examples) boostrapSample(size int) Examples {
 func (e Examples) crossValidationSamples(folds int) []Examples {
 	crossValidatedSamples := make([]Examples, folds)
 	for i, _ := range crossValidatedSamples {
-		crossValidatedSamples[i] = make([]*Example, 0, e.Len()/folds)
+		crossValidatedSamples[i] = make([]*Example, 0, len(e)/folds)
 	}
 
 	// Do a Fischer-Yates shuffle of the input array
@@ -73,25 +70,31 @@ func (e Examples) boostrapFeatures(size int) []int64 {
 	return subsample
 }
 
-func (e Examples) Swap(i int, j int) {
-	e[i], e[j] = e[j], e[i]
+type By func(e1, e2 *Example) bool
+
+func (by By) Sort(examples Examples) {
+	es := &exampleSorter{
+		examples: examples,
+		by:       by, // The Sort method's receiver is the function (closure) that defines the sort order.
+	}
+	sort.Sort(es)
 }
 
-type LabelSorter struct {
-	Examples
+type exampleSorter struct {
+	examples Examples
+	by       By
 }
 
-func (l LabelSorter) Less(i int, j int) bool {
-	return l.Examples[i].Label < l.Examples[j].Label
+func (s *exampleSorter) Len() int {
+	return len(s.examples)
 }
 
-type ExampleSorter struct {
-	Examples
-	featureIndex int64
+func (e *exampleSorter) Swap(i int, j int) {
+	e.examples[i], e.examples[j] = e.examples[j], e.examples[i]
 }
 
-func (e ExampleSorter) Less(i int, j int) bool {
-	return e.Examples[i].Features[e.featureIndex] < e.Examples[j].Features[e.featureIndex]
+func (e *exampleSorter) Less(i int, j int) bool {
+	return e.by(e.examples[i], e.examples[j])
 }
 
 func (e Examples) getFeatures() []int64 {

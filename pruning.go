@@ -4,12 +4,13 @@ import (
 	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"math"
-	"sort"
 	"sync"
 )
 
 func splitExamples(t *pb.TreeNode, e Examples) (left Examples, right Examples) {
-	sort.Sort(ExampleSorter{e, t.GetFeature()})
+	By(func(e1, e2 *Example) bool {
+		return e1.Features[t.GetFeature()] < e2.Features[t.GetFeature()]
+	}).Sort(e)
 	splitIndex := 0
 	for i, ex := range e {
 		splitIndex = i
@@ -121,7 +122,7 @@ func (p *Pruner) Prune(t *pb.TreeNode, trainingSet Examples, testingSet Examples
 		w.Add(1)
 		go func(pos int) {
 			rootCost, _ := weakestLinkCostFunction(prunedSequence[pos].tree, testingSet)
-			result[i] = rootCost / float64(testingSet.Len())
+			result[i] = rootCost / float64(len(testingSet))
 		}(i)
 	}
 	w.Done()

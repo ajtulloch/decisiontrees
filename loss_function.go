@@ -4,13 +4,13 @@ import (
 	"fmt"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"math"
-	"sort"
 )
 
 type LossFunction interface {
 	UpdateWeightedLabels(e Examples)
 	GetPrior(e Examples) float64
 	GetLeafWeight(e Examples) float64
+	GetSampleImportance(ex *Example) float64
 }
 
 type LogitLoss struct {
@@ -22,6 +22,12 @@ func (l LogitLoss) UpdateWeightedLabels(e Examples) {
 		prediction := l.evaluator.evaluate(ex.Features)
 		ex.WeightedLabel = 2 * ex.Label / (1 + math.Exp(2*ex.Label*prediction))
 	}
+}
+
+func (l LogitLoss) GetSampleImportance(ex *Example) float64 {
+	prediction := l.evaluator.evaluate(ex.Features)
+	weightedLabel := 2 * ex.Label / (1 + math.Exp(2*ex.Label*prediction))
+	return math.Abs(weightedLabel) * (2 - math.Abs(weightedLabel))
 }
 
 func (l LogitLoss) GetPrior(e Examples) float64 {
@@ -46,19 +52,25 @@ type LeastAbsoluteDeviationLoss struct {
 	evaluator Evaluator
 }
 
+func (l LeastAbsoluteDeviationLoss) GetSampleImportance(ex *Example) float64 {
+	return 1.0
+}
+
 func (l LeastAbsoluteDeviationLoss) GetPrior(e Examples) float64 {
 	// Return the median label
-	sort.Sort(LabelSorter{e})
-	return e[e.Len()/2].Label
+	By(func(e1, e2 *Example) bool { return e1.Label < e2.Label }).Sort(e)
+	return e[len(e)/2].Label
+}
+
+func (l LeastAbsoluteDeviationLoss) residual(ex *Example) float64 {
+	return ex.Label - l.evaluator.evaluate(ex.Features)
 }
 
 func (l LeastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
-	residuals := sort.Float64Slice(make([]float64, e.Len()))
-	for i, _ := range e {
-		residuals[i] = e[i].Label - l.evaluator.evaluate(e[i].Features)
-	}
-	residuals.Sort()
-	return residuals[e.Len()/2]
+	By(func(e1, e2 *Example) bool {
+		return l.residual(e1) < l.residual(e2)
+	}).Sort(e)
+	return l.residual(e[len(e)/2])
 }
 
 func (l LeastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
@@ -81,20 +93,26 @@ type HuberLoss struct {
 }
 
 func (h HuberLoss) GetPrior(e Examples) float64 {
-	// Return the median label
-	sort.Sort(LabelSorter{e})
-	return e[e.Len()/2].Label
+	By(func(e1, e2 *Example) bool { return e1.Label < e2.Label }).Sort(e)
+	return e[len(e)/2].Label
+}
+
+func (h HuberLoss) GetSampleImportance(ex *Example) float64 {
+	return 1.0
+}
+
+func (h HuberLoss) residual(ex *Example) float64 {
+	return ex.Label - h.evaluator.evaluate(ex.Features)
 }
 
 func (h HuberLoss) UpdateWeightedLabels(e Examples) {
-	residuals := sort.Float64Slice(make([]float64, e.Len()))
-	for i, ex := range e {
-		residuals[i] = ex.Label - h.evaluator.evaluate(ex.Features)
-	}
-	residuals.Sort()
-	delta := residuals[int64(float64(e.Len())*h.huberAlpha)]
+	By(func(e1, e2 *Example) bool {
+		return h.residual(e1) < h.residual(e2)
+	}).Sort(e)
+	marginalExample := e[int64(float64(len(e))*h.huberAlpha)]
+	delta := h.residual(marginalExample)
 	for _, ex := range e {
-		divergence := ex.Label - h.evaluator.evaluate(ex.Features)
+		divergence := h.residual(ex)
 		if divergence <= delta {
 			ex.WeightedLabel = divergence
 		} else {
@@ -104,19 +122,13 @@ func (h HuberLoss) UpdateWeightedLabels(e Examples) {
 }
 
 func (h HuberLoss) GetLeafWeight(e Examples) float64 {
-	residuals := sort.Float64Slice(make([]float64, e.Len()))
-	for i, ex := range e {
-		residuals[i] = ex.Label - h.evaluator.evaluate(ex.Features)
-	}
-	residuals.Sort()
-	medianResidual := residuals[e.Len()/2]
-
+	By(func(e1, e2 *Example) bool {
+		return h.residual(e1) < h.residual(e2)
+	}).Sort(e)
+	medianResidual := h.residual(e[len(e)/2])
 	innerDistribution := 0.0
 	for _, ex := range e {
-		residualDelta :=
-			(ex.Label - h.evaluator.evaluate(ex.Features)) -
-				medianResidual
-
+		residualDelta := h.residual(ex) - medianResidual
 		if residualDelta == 0.0 {
 			continue
 		}
@@ -126,7 +138,7 @@ func (h HuberLoss) GetLeafWeight(e Examples) float64 {
 				math.Min(h.lastDeltaM, math.Abs(residualDelta))
 	}
 
-	return medianResidual + innerDistribution/float64(e.Len())
+	return medianResidual + innerDistribution/float64(len(e))
 }
 
 func NewLossFunction(l *pb.LossFunctionConfig, evaluator Evaluator) LossFunction {

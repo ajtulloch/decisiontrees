@@ -198,6 +198,30 @@ func (m *PruningConstraints) GetCrossValidationFolds() int64 {
 	return 0
 }
 
+type InfluenceTrimmingConfig struct {
+	Alpha            *float64 `protobuf:"fixed64,1,opt,name=alpha" json:"alpha,omitempty"`
+	WarmupRounds     *int64   `protobuf:"varint,2,opt,name=warmupRounds" json:"warmupRounds,omitempty"`
+	XXX_unrecognized []byte   `json:"-"`
+}
+
+func (m *InfluenceTrimmingConfig) Reset()         { *m = InfluenceTrimmingConfig{} }
+func (m *InfluenceTrimmingConfig) String() string { return proto.CompactTextString(m) }
+func (*InfluenceTrimmingConfig) ProtoMessage()    {}
+
+func (m *InfluenceTrimmingConfig) GetAlpha() float64 {
+	if m != nil && m.Alpha != nil {
+		return *m.Alpha
+	}
+	return 0
+}
+
+func (m *InfluenceTrimmingConfig) GetWarmupRounds() int64 {
+	if m != nil && m.WarmupRounds != nil {
+		return *m.WarmupRounds
+	}
+	return 0
+}
+
 type LossFunctionConfig struct {
 	LossFunction     *LossFunction `protobuf:"varint,1,opt,name=lossFunction,enum=protobufs.LossFunction" json:"lossFunction,omitempty"`
 	HuberAlpha       *float64      `protobuf:"fixed64,2,opt,name=huberAlpha" json:"huberAlpha,omitempty"`
@@ -223,15 +247,23 @@ func (m *LossFunctionConfig) GetHuberAlpha() float64 {
 }
 
 type ForestConfig struct {
-	SplittingConstraints *SplittingConstraints `protobuf:"bytes,1,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
-	LossFunctionConfig   *LossFunctionConfig   `protobuf:"bytes,2,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
-	NumWeakLearners      *int64                `protobuf:"varint,3,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
-	XXX_unrecognized     []byte                `json:"-"`
+	NumWeakLearners         *int64                   `protobuf:"varint,1,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
+	SplittingConstraints    *SplittingConstraints    `protobuf:"bytes,2,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
+	LossFunctionConfig      *LossFunctionConfig      `protobuf:"bytes,3,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
+	InfluenceTrimmingConfig *InfluenceTrimmingConfig `protobuf:"bytes,4,opt,name=influenceTrimmingConfig" json:"influenceTrimmingConfig,omitempty"`
+	XXX_unrecognized        []byte                   `json:"-"`
 }
 
 func (m *ForestConfig) Reset()         { *m = ForestConfig{} }
 func (m *ForestConfig) String() string { return proto.CompactTextString(m) }
 func (*ForestConfig) ProtoMessage()    {}
+
+func (m *ForestConfig) GetNumWeakLearners() int64 {
+	if m != nil && m.NumWeakLearners != nil {
+		return *m.NumWeakLearners
+	}
+	return 0
+}
 
 func (m *ForestConfig) GetSplittingConstraints() *SplittingConstraints {
 	if m != nil {
@@ -247,11 +279,11 @@ func (m *ForestConfig) GetLossFunctionConfig() *LossFunctionConfig {
 	return nil
 }
 
-func (m *ForestConfig) GetNumWeakLearners() int64 {
-	if m != nil && m.NumWeakLearners != nil {
-		return *m.NumWeakLearners
+func (m *ForestConfig) GetInfluenceTrimmingConfig() *InfluenceTrimmingConfig {
+	if m != nil {
+		return m.InfluenceTrimmingConfig
 	}
-	return 0
+	return nil
 }
 
 func init() {
