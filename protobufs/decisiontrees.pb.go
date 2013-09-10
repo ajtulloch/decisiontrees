@@ -246,11 +246,28 @@ func (m *LossFunctionConfig) GetHuberAlpha() float64 {
 	return 0
 }
 
+type ShrinkageConfig struct {
+	Shrinkage        *float64 `protobuf:"fixed64,1,opt,name=shrinkage" json:"shrinkage,omitempty"`
+	XXX_unrecognized []byte   `json:"-"`
+}
+
+func (m *ShrinkageConfig) Reset()         { *m = ShrinkageConfig{} }
+func (m *ShrinkageConfig) String() string { return proto.CompactTextString(m) }
+func (*ShrinkageConfig) ProtoMessage()    {}
+
+func (m *ShrinkageConfig) GetShrinkage() float64 {
+	if m != nil && m.Shrinkage != nil {
+		return *m.Shrinkage
+	}
+	return 0
+}
+
 type ForestConfig struct {
 	NumWeakLearners         *int64                   `protobuf:"varint,1,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
 	SplittingConstraints    *SplittingConstraints    `protobuf:"bytes,2,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
 	LossFunctionConfig      *LossFunctionConfig      `protobuf:"bytes,3,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
 	InfluenceTrimmingConfig *InfluenceTrimmingConfig `protobuf:"bytes,4,opt,name=influenceTrimmingConfig" json:"influenceTrimmingConfig,omitempty"`
+	ShrinkageConfig         *ShrinkageConfig         `protobuf:"bytes,5,opt,name=shrinkageConfig" json:"shrinkageConfig,omitempty"`
 	XXX_unrecognized        []byte                   `json:"-"`
 }
 
@@ -282,6 +299,13 @@ func (m *ForestConfig) GetLossFunctionConfig() *LossFunctionConfig {
 func (m *ForestConfig) GetInfluenceTrimmingConfig() *InfluenceTrimmingConfig {
 	if m != nil {
 		return m.InfluenceTrimmingConfig
+	}
+	return nil
+}
+
+func (m *ForestConfig) GetShrinkageConfig() *ShrinkageConfig {
+	if m != nil {
+		return m.ShrinkageConfig
 	}
 	return nil
 }

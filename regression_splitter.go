@@ -39,9 +39,13 @@ func (l *lossState) removeExample(e *Example) {
 type RegressionSplitter struct {
 	lossFunction         LossFunction
 	splittingConstraints *pb.SplittingConstraints
+	shrinkageConfig      *pb.ShrinkageConfig
 }
 
-func (c *RegressionSplitter) shouldSplit(examples Examples, bestGain float64, currentLevel int64) bool {
+func (c *RegressionSplitter) shouldSplit(
+	examples Examples,
+	bestGain float64,
+	currentLevel int64) bool {
 	maximumLevels := c.splittingConstraints.MaximumLevels
 	if maximumLevels != nil && *maximumLevels > currentLevel {
 		return false
@@ -123,6 +127,9 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 	// Otherwise, return the leaf
 	leafWeight := c.lossFunction.GetLeafWeight(examples)
 	prior := c.lossFunction.GetPrior(examples)
+	if c.shrinkageConfig != nil {
+		leafWeight *= c.shrinkageConfig.GetShrinkage()
+	}
 	return &pb.TreeNode{
 		LeafValue: proto.Float64(leafWeight * prior),
 	}

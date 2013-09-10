@@ -61,6 +61,7 @@ func (b *BoostingTreeGenerator) constructWeakLearner(e Examples) {
 	weakLearner := (&RegressionSplitter{
 		lossFunction:         lossFunction,
 		splittingConstraints: b.forestConfig.GetSplittingConstraints(),
+		shrinkageConfig:      b.forestConfig.GetShrinkageConfig(),
 	}).GenerateTree(e)
 
 	b.forest.Trees = append(b.forest.Trees, weakLearner)

@@ -48,9 +48,14 @@ message LossFunctionConfig {
   optional double huberAlpha = 2;
 }
 
+message ShrinkageConfig {
+  optional double shrinkage = 1;
+}
+
 message ForestConfig {
   optional int64 numWeakLearners = 1;
   optional SplittingConstraints splittingConstraints = 2;
   optional LossFunctionConfig lossFunctionConfig = 3;
   optional InfluenceTrimmingConfig influenceTrimmingConfig = 4;
+  optional ShrinkageConfig shrinkageConfig = 5;
 }
