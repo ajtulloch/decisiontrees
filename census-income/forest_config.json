@@ -1,0 +1,9 @@
+{
+  "numWeakLearners": 100,
+  "splittingConstraints": {
+    "maximumLevels": 3
+  },
+  "lossFunctionConfig": {
+    "lossFunction": "LOGIT"
+  }
+}
