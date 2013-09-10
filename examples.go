@@ -20,19 +20,13 @@ func (e Example) asBool() bool {
 
 type Examples []*Example
 
-func (e Examples) boostrapSample(size int) Examples {
-	subsample := make([]*Example, size)
-	for i, _ := range subsample {
-		subsample[i] = e[i]
+func (e Examples) subsampleExamples(samplingRate float64) Examples {
+	for i := range e {
+		j := rand.Intn(i + 1)
+		e[i], e[j] = e[j], e[i]
 	}
 
-	for i := size + 1; i < len(e); i++ {
-		j := int(rand.Int31n(int32(i)))
-		if j < size {
-			subsample[j] = e[i]
-		}
-	}
-	return Examples(subsample)
+	return e[:int64(float64(len(e))*samplingRate)]
 }
 
 func (e Examples) crossValidationSamples(folds int) []Examples {

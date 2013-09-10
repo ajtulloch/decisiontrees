@@ -262,12 +262,30 @@ func (m *ShrinkageConfig) GetShrinkage() float64 {
 	return 0
 }
 
+type StochasticityConfig struct {
+	// Take a random sample of training data per round
+	PerRoundSamplingRate *float64 `protobuf:"fixed64,1,opt,name=perRoundSamplingRate" json:"perRoundSamplingRate,omitempty"`
+	XXX_unrecognized     []byte   `json:"-"`
+}
+
+func (m *StochasticityConfig) Reset()         { *m = StochasticityConfig{} }
+func (m *StochasticityConfig) String() string { return proto.CompactTextString(m) }
+func (*StochasticityConfig) ProtoMessage()    {}
+
+func (m *StochasticityConfig) GetPerRoundSamplingRate() float64 {
+	if m != nil && m.PerRoundSamplingRate != nil {
+		return *m.PerRoundSamplingRate
+	}
+	return 0
+}
+
 type ForestConfig struct {
 	NumWeakLearners         *int64                   `protobuf:"varint,1,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
 	SplittingConstraints    *SplittingConstraints    `protobuf:"bytes,2,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
 	LossFunctionConfig      *LossFunctionConfig      `protobuf:"bytes,3,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
 	InfluenceTrimmingConfig *InfluenceTrimmingConfig `protobuf:"bytes,4,opt,name=influenceTrimmingConfig" json:"influenceTrimmingConfig,omitempty"`
 	ShrinkageConfig         *ShrinkageConfig         `protobuf:"bytes,5,opt,name=shrinkageConfig" json:"shrinkageConfig,omitempty"`
+	StochasticityConfig     *StochasticityConfig     `protobuf:"bytes,6,opt,name=stochasticityConfig" json:"stochasticityConfig,omitempty"`
 	XXX_unrecognized        []byte                   `json:"-"`
 }
 
@@ -306,6 +324,13 @@ func (m *ForestConfig) GetInfluenceTrimmingConfig() *InfluenceTrimmingConfig {
 func (m *ForestConfig) GetShrinkageConfig() *ShrinkageConfig {
 	if m != nil {
 		return m.ShrinkageConfig
+	}
+	return nil
+}
+
+func (m *ForestConfig) GetStochasticityConfig() *StochasticityConfig {
+	if m != nil {
+		return m.StochasticityConfig
 	}
 	return nil
 }

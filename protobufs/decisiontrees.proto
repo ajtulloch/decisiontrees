@@ -52,10 +52,16 @@ message ShrinkageConfig {
   optional double shrinkage = 1;
 }
 
+message StochasticityConfig {
+  // Take a random sample of training data per round
+  optional double perRoundSamplingRate = 1;
+}
+
 message ForestConfig {
   optional int64 numWeakLearners = 1;
   optional SplittingConstraints splittingConstraints = 2;
   optional LossFunctionConfig lossFunctionConfig = 3;
   optional InfluenceTrimmingConfig influenceTrimmingConfig = 4;
   optional ShrinkageConfig shrinkageConfig = 5;
+  optional StochasticityConfig stochasticityConfig = 6;
 }
