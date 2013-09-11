@@ -122,7 +122,7 @@ func (p *Pruner) Prune(t *pb.TreeNode, trainingSet Examples, testingSet Examples
 		w.Add(1)
 		go func(pos int) {
 			rootCost, _ := weakestLinkCostFunction(prunedSequence[pos].tree, testingSet)
-			result[i] = rootCost / float64(len(testingSet))
+			result[pos] = rootCost / float64(len(testingSet))
 		}(i)
 	}
 	w.Done()
