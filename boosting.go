@@ -3,17 +3,16 @@ package decisiontrees
 import (
 	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
+	"github.com/golang/glog"
 )
 
-type BoostingTreeGenerator struct {
+type boostingTreeGenerator struct {
 	forestConfig *pb.ForestConfig
 	forest       *pb.Forest
 }
 
-func (b *BoostingTreeGenerator) doInfluenceTrimming(e Examples) Examples {
-	lossFunction := NewLossFunction(
-		b.forestConfig.GetLossFunctionConfig(),
-		NewFastForestEvaluator(b.forest))
+func (b *boostingTreeGenerator) doInfluenceTrimming(e Examples) Examples {
+	lossFunction := b.getLossFunction()
 
 	By(func(e1, e2 *Example) bool {
 		return lossFunction.GetSampleImportance(e1) < lossFunction.GetSampleImportance(e2)
@@ -37,20 +36,13 @@ func (b *BoostingTreeGenerator) doInfluenceTrimming(e Examples) Examples {
 	return e[cutoffPoint:]
 }
 
-func (b *BoostingTreeGenerator) updateExampleWeights(e Examples) {
-	lossFunction := NewLossFunction(
-		b.forestConfig.GetLossFunctionConfig(),
-		NewFastForestEvaluator(b.forest))
-	lossFunction.UpdateWeightedLabels(e)
+func (b *boostingTreeGenerator) updateExampleWeights(e Examples) {
+	b.getLossFunction().UpdateWeightedLabels(e)
 }
 
-func (b *BoostingTreeGenerator) constructWeakLearner(e Examples) {
-	lossFunction := NewLossFunction(
-		b.forestConfig.GetLossFunctionConfig(),
-		NewFastForestEvaluator(b.forest))
-
+func (b *boostingTreeGenerator) constructWeakLearner(e Examples) {
 	weakLearner := (&RegressionSplitter{
-		lossFunction:         lossFunction,
+		lossFunction:         b.getLossFunction(),
 		splittingConstraints: b.forestConfig.GetSplittingConstraints(),
 		shrinkageConfig:      b.forestConfig.GetShrinkageConfig(),
 	}).GenerateTree(e)
@@ -58,7 +50,7 @@ func (b *BoostingTreeGenerator) constructWeakLearner(e Examples) {
 	b.forest.Trees = append(b.forest.Trees, weakLearner)
 }
 
-func (b *BoostingTreeGenerator) doBoostingRound(e Examples, round int) {
+func (b *boostingTreeGenerator) doBoostingRound(e Examples, round int) {
 	if b.forestConfig.GetStochasticityConfig() != nil {
 		e = e.subsampleExamples(b.forestConfig.GetStochasticityConfig().GetPerRoundSamplingRate())
 	}
@@ -73,25 +65,39 @@ func (b *BoostingTreeGenerator) doBoostingRound(e Examples, round int) {
 	b.constructWeakLearner(e)
 }
 
-func (b *BoostingTreeGenerator) initializeForest(e Examples) {
+func (b *boostingTreeGenerator) getLossFunction() LossFunction {
+	evaluator, err := NewFastForestEvaluator(b.forest)
+	if err != nil {
+		glog.Fatal(err)
+		panic("")
+	}
+
+	return NewLossFunction(b.forestConfig.GetLossFunctionConfig(), evaluator)
+}
+
+func (b *boostingTreeGenerator) initializeForest(e Examples) {
 	b.forest = &pb.Forest{
 		Trees: make([]*pb.TreeNode, 0, b.forestConfig.GetNumWeakLearners()),
 	}
 
-	lossFunction := NewLossFunction(
-		b.forestConfig.GetLossFunctionConfig(),
-		NewFastForestEvaluator(b.forest))
-
 	// Initial prior
 	b.forest.Trees = append(b.forest.Trees, &pb.TreeNode{
-		LeafValue: proto.Float64(lossFunction.GetPrior(e)),
+		LeafValue: proto.Float64(b.getLossFunction().GetPrior(e)),
 	})
 }
 
-func (b *BoostingTreeGenerator) ConstructBoostingTree(e Examples) *pb.Forest {
+func (b *boostingTreeGenerator) ConstructBoostingTree(e Examples) *pb.Forest {
+	glog.Infof("Initializing forest with config %+v", b.forestConfig)
 	b.initializeForest(e)
-	for i := 1; i < int(b.forestConfig.GetNumWeakLearners()); i++ {
+	for i := 0; i < int(b.forestConfig.GetNumWeakLearners()); i++ {
+		glog.Infof("Running boosting round %v", i)
 		b.doBoostingRound(e, i)
 	}
 	return b.forest
+}
+
+func NewBoostingTreeGenerator(forestConfig *pb.ForestConfig) *boostingTreeGenerator {
+	return &boostingTreeGenerator{
+		forestConfig: forestConfig,
+	}
 }

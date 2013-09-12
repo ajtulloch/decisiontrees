@@ -4,15 +4,10 @@ import (
 	"code.google.com/p/goprotobuf/proto"
 	"flag"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
+	"github.com/golang/glog"
 	"math/rand"
 	"sync"
 	"testing"
-)
-
-var (
-	numFeatures = flag.Int("num_features", 1000, "")
-	numTrees    = flag.Int("num_trees", 600, "")
-	numLevels   = flag.Int("num_levels", 2, "")
 )
 
 func makeTree(level int, numFeatures int) *pb.TreeNode {
@@ -48,8 +43,8 @@ func makeForest(numTrees int, numLevels int, numFeatures int) *pb.Forest {
 	return forest
 }
 
-func randomFeatureVector(numFeatures int) map[int64]float64 {
-	result := make(map[int64]float64)
+func randomFeatureVector(numFeatures int) []float64 {
+	result := make([]float64, numFeatures)
 	for i := 0; i < numFeatures; i++ {
 		result[int64(i)] = rand.Float64()
 	}
@@ -64,7 +59,12 @@ func TestTreeEvaluation(t *testing.T) {
 	numEvaluations := 1
 	for i := 0; i < numForests; i++ {
 		forest := makeForest(numTrees, numLevels, numFeatures)
-		fastEvaluator := NewFastForestEvaluator(forest)
+		evaluator, err := NewFastForestEvaluator(forest)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fastEvaluator := evaluator
 		slowEvaluator := &ForestEvaluator{forest}
 
 		for j := 0; j < numEvaluations; j++ {
@@ -82,13 +82,16 @@ func benchEvaluator(f func(*pb.Forest) Evaluator, b *testing.B) {
 	forest := makeForest(*numTrees, *numLevels, *numFeatures)
 	evaluator := f(forest)
 
-	featureVectors := make([]map[int64]float64, 0, b.N)
+	glog.Info("Constructing features")
+	featureVectors := make([][]float64, 0, b.N)
 	for i := 0; i < b.N; i++ {
 		featureVectors = append(featureVectors, randomFeatureVector(*numFeatures))
 	}
+	glog.Info("Finished constructing features")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		glog.Info("Evaluating example")
 		evaluator.evaluate(featureVectors[i])
 	}
 }
@@ -96,7 +99,12 @@ func benchEvaluator(f func(*pb.Forest) Evaluator, b *testing.B) {
 func BenchmarkFastTreeEvaluation(b *testing.B) {
 	flag.Parse()
 	f := func(forest *pb.Forest) Evaluator {
-		return NewFastForestEvaluator(forest)
+		evaluator, err := NewFastForestEvaluator(forest)
+		if err != nil {
+			glog.Fatal(err)
+			panic("")
+		}
+		return evaluator
 	}
 	benchEvaluator(f, b)
 }
@@ -105,14 +113,6 @@ func BenchmarkNaiveTreeEvaluation(b *testing.B) {
 	flag.Parse()
 	f := func(forest *pb.Forest) Evaluator {
 		return &ForestEvaluator{forest}
-	}
-	benchEvaluator(f, b)
-}
-
-func BenchmarkParallelTreeEvaluation(b *testing.B) {
-	flag.Parse()
-	f := func(forest *pb.Forest) Evaluator {
-		return NewParallelForestEvaluator(forest)
 	}
 	benchEvaluator(f, b)
 }

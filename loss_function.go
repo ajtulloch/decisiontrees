@@ -1,8 +1,8 @@
 package decisiontrees
 
 import (
-	"fmt"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
+	"github.com/golang/glog"
 	"math"
 )
 
@@ -30,13 +30,35 @@ func (l LogitLoss) GetSampleImportance(ex *Example) float64 {
 	return math.Abs(weightedLabel) * (2 - math.Abs(weightedLabel))
 }
 
+func clampToRange(value, lower, upper float64) float64 {
+	if value < lower {
+		return lower
+	}
+	if value > upper {
+		return upper
+	}
+	return value
+}
+
+const (
+	minLogitPrior = -20.0
+	maxLogitPrior = 20.0
+)
+
 func (l LogitLoss) GetPrior(e Examples) float64 {
+	if len(e) == 0 {
+		return 0.0
+	}
+
 	sumLabels := float64(0.0)
 	for _, example := range e {
 		sumLabels += example.Label
 	}
 	averageLabel := sumLabels / float64(len(e))
-	return 0.5 * math.Log((1+averageLabel)/(1-averageLabel))
+	return clampToRange(
+		0.5*math.Log((1+averageLabel)/(1-averageLabel)),
+		minLogitPrior,
+		maxLogitPrior)
 }
 
 func (l LogitLoss) GetLeafWeight(e Examples) float64 {
@@ -157,5 +179,6 @@ func NewLossFunction(l *pb.LossFunctionConfig, evaluator Evaluator) LossFunction
 			evaluator:  evaluator,
 		}
 	}
-	panic(fmt.Sprint("Unknown enum: ", l.String()))
+	glog.Fatalf("Unknown enum: %v", l)
+	panic("")
 }

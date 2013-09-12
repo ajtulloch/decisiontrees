@@ -20,7 +20,7 @@ func randomDataset(size int, average float64) LabelledPredictions {
 	return predictions
 }
 func near(expected float64, actual float64) bool {
-	return math.Abs(expected-actual) < 0.02
+	return math.Abs(expected-actual) < 0.03
 }
 
 func TestRandomDatasetHasExpectedStatistics(t *testing.T) {

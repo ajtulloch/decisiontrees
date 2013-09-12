@@ -1,6 +1,7 @@
 package decisiontrees
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -8,7 +9,7 @@ import (
 type Example struct {
 	Label         float64
 	WeightedLabel float64
-	Features      map[int64]float64
+	Features      []float64
 }
 
 func (e Example) asBool() bool {
@@ -48,8 +49,8 @@ func (e Examples) crossValidationSamples(folds int) []Examples {
 	return crossValidatedSamples
 }
 
-func (e Examples) boostrapFeatures(size int) []int64 {
-	subsample := make([]int64, size)
+func (e Examples) boostrapFeatures(size int) []int {
+	subsample := make([]int, size)
 	allFeatures := e.getFeatures()
 	for i, _ := range subsample {
 		subsample[i] = allFeatures[i]
@@ -62,6 +63,14 @@ func (e Examples) boostrapFeatures(size int) []int64 {
 		}
 	}
 	return subsample
+}
+
+func (e Examples) String() string {
+	i := make([]interface{}, 0, len(e))
+	for _, ex := range e {
+		i = append(i, fmt.Sprintf("%+v", ex))
+	}
+	return fmt.Sprint(i...)
 }
 
 type By func(e1, e2 *Example) bool
@@ -91,14 +100,16 @@ func (e *exampleSorter) Less(i int, j int) bool {
 	return e.by(e.examples[i], e.examples[j])
 }
 
-func (e Examples) getFeatures() []int64 {
-	vals := make(map[int64]bool)
+func (e Examples) getFeatures() []int {
+	vals := make(map[int]bool)
 	for _, example := range e {
-		for k, _ := range example.Features {
-			vals[k] = true
+		for k, v := range example.Features {
+			if v != 0.0 {
+				vals[k] = true
+			}
 		}
 	}
-	res := make([]int64, 0, len(vals))
+	res := make([]int, 0, len(vals))
 	for k, _ := range vals {
 		res = append(res, k)
 	}

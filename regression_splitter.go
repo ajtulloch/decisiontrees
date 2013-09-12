@@ -3,6 +3,7 @@ package decisiontrees
 import (
 	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
+	"github.com/golang/glog"
 	"sync"
 )
 
@@ -44,15 +45,26 @@ type RegressionSplitter struct {
 
 func (c *RegressionSplitter) shouldSplit(
 	examples Examples,
-	bestGain float64,
+	bestSplit split,
 	currentLevel int64) bool {
+	if len(examples) <= 1 {
+		glog.Infof("Num examples is %v, terminating", len(examples))
+		return false
+	}
+
+	if bestSplit.index == 0 || bestSplit.index == len(examples) {
+		glog.Infof("Empty branch with bestSplit = %v, numExamples = %v, terminating", bestSplit, len(examples))
+		return false
+	}
+
 	maximumLevels := c.splittingConstraints.MaximumLevels
-	if maximumLevels != nil && *maximumLevels > currentLevel {
+	if maximumLevels != nil && *maximumLevels < currentLevel {
+		glog.Infof("Maximum levels is %v < %v currentLevel", *maximumLevels, currentLevel)
 		return false
 	}
 
 	minAverageGain := c.splittingConstraints.MinimumAverageGain
-	if minAverageGain != nil && *minAverageGain > bestGain/float64(len(examples)) {
+	if minAverageGain != nil && *minAverageGain > bestSplit.gain/float64(len(examples)) {
 		return false
 	}
 
@@ -63,48 +75,85 @@ func (c *RegressionSplitter) shouldSplit(
 	return true
 }
 
+type split struct {
+	feature int
+	index   int
+	gain    float64
+}
+
+func getBestSplit(examples Examples, feature int) split {
+	examplesCopy := make([]*Example, len(examples))
+	if copy(examplesCopy, examples) != len(examples) {
+		glog.Fatal("Failed copying all examples for sorting")
+	}
+
+	By(func(e1, e2 *Example) bool {
+		return e1.Features[feature] < e2.Features[feature]
+	}).Sort(Examples(examplesCopy))
+
+	leftLoss := constructLoss(Examples{})
+	rightLoss := constructLoss(examplesCopy)
+	totalLoss := constructLoss(examplesCopy)
+	bestSplit := split{
+		feature: feature,
+	}
+	for index, example := range examplesCopy {
+		func() {
+			if index == 0 {
+				return
+			}
+
+			previousValue := examplesCopy[index-1].Features[feature]
+			currentValue := example.Features[feature]
+			if previousValue == currentValue {
+				return
+			}
+
+			gain := totalLoss.sumSquaredDivergence -
+				leftLoss.sumSquaredDivergence -
+				rightLoss.sumSquaredDivergence
+			if gain > bestSplit.gain {
+				bestSplit.gain = gain
+				bestSplit.index = index
+			}
+		}()
+
+		leftLoss.addExample(example)
+		rightLoss.removeExample(example)
+	}
+	return bestSplit
+}
+
 func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64) *pb.TreeNode {
-	bestGain, bestFeature, bestValue, bestIndex := 0.0, int64(0), float64(0.0), 0
-	leftLoss, rightLoss, totalLoss := constructLoss(Examples{}), constructLoss(examples), constructLoss(examples)
+	glog.Infof("Generating tree at level %v with %v examples", currentLevel, len(examples))
+	glog.V(2).Infof("Generating with examples %+v", currentLevel, examples)
 
-	for _, feature := range examples.getFeatures() {
-		// TODO(tulloch) - parallelize this sort
-		By(func(e1, e2 *Example) bool {
-			return e1.Features[feature] < e2.Features[feature]
-		}).Sort(examples)
-		for index, example := range examples {
-			func() {
-				if index == 0 {
-					return
-				}
+	features := examples.getFeatures()
+	candidateSplits := make(chan split, len(features))
+	for _, feature := range features {
+		go func(feature int) {
+			candidateSplits <- getBestSplit(examples, feature)
+		}(feature)
+	}
 
-				previousValue := examples[index-1].Features[feature]
-				currentValue := example.Features[feature]
-				if previousValue == currentValue {
-					return
-				}
-
-				gain := totalLoss.sumSquaredDivergence - leftLoss.sumSquaredDivergence - rightLoss.sumSquaredDivergence
-				if gain > bestGain {
-					bestGain = gain
-					bestFeature = feature
-					bestValue = 0.5 * (previousValue + currentValue)
-					bestIndex = index
-				}
-			}()
-
-			leftLoss.addExample(example)
-			rightLoss.removeExample(example)
+	bestSplit := split{}
+	for _, _ = range features {
+		candidateSplit := <-candidateSplits
+		if candidateSplit.gain > bestSplit.gain {
+			bestSplit = candidateSplit
 		}
 	}
 
-	if c.shouldSplit(examples, bestGain, currentLevel) {
+	if c.shouldSplit(examples, bestSplit, currentLevel) {
+		glog.Infof("Splitting at level %v with split %v", currentLevel, bestSplit)
 		By(func(e1, e2 *Example) bool {
-			return e1.Features[bestFeature] < e2.Features[bestFeature]
+			return e1.Features[bestSplit.feature] < e2.Features[bestSplit.feature]
 		}).Sort(examples)
 
+		bestValue := 0.5 * (examples[bestSplit.index-1].Features[bestSplit.feature] +
+			examples[bestSplit.index].Features[bestSplit.feature])
 		tree := &pb.TreeNode{
-			Feature:    proto.Int64(bestFeature),
+			Feature:    proto.Int64(int64(bestSplit.feature)),
 			SplitValue: proto.Float64(bestValue),
 		}
 
@@ -118,20 +167,24 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 			}()
 		}
 
-		recur(&tree.Left, examples[bestIndex:])
-		recur(&tree.Right, examples[:bestIndex])
+		recur(&tree.Left, examples[bestSplit.index:])
+		recur(&tree.Right, examples[:bestSplit.index])
 		w.Wait()
 		return tree
 	}
 
+	glog.Infof("Terminating at level %v with %v examples", currentLevel, len(examples))
+	glog.V(2).Infof("Terminating with examples: %v", examples)
 	// Otherwise, return the leaf
 	leafWeight := c.lossFunction.GetLeafWeight(examples)
-	prior := c.lossFunction.GetPrior(examples)
-	if c.shrinkageConfig != nil {
-		leafWeight *= c.shrinkageConfig.GetShrinkage()
+	shrinkage := 1.0
+	if c.shrinkageConfig != nil && c.shrinkageConfig.Shrinkage != nil {
+		shrinkage = c.shrinkageConfig.GetShrinkage()
 	}
+
+	glog.Infof("Leaf weight: %v, shrinkage: %v", leafWeight, shrinkage)
 	return &pb.TreeNode{
-		LeafValue: proto.Float64(leafWeight * prior),
+		LeafValue: proto.Float64(leafWeight * shrinkage),
 	}
 }
 
