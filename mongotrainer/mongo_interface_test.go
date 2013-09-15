@@ -19,7 +19,8 @@ func TestMongoInteraction(t *testing.T) {
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
-	c := session.DB(*MongoDatabase).C(*MongoCollection)
+	c := session.DB("test").C("mongo_interface_test")
+	c.Remove(bson.M{})
 	entry := pb.TrainingRow{
 		TrainingStatus: pb.TrainingStatus_UNCLAIMED.Enum(),
 		ForestConfig: &pb.ForestConfig{
