@@ -9,19 +9,19 @@ import (
 	"labix.org/v2/mgo"
 )
 
-// Source is an interface for extracting training data from
+// DataSource is an interface for extracting training data from
 // an arbitrary location
 // TODO(tulloch) - make this an iterator?
-type Source interface {
+type DataSource interface {
 	GetTrainingData() (*pb.TrainingData, error)
 }
 
-type gridFsSource struct {
+type gridFsDataSource struct {
 	session *mgo.Session
 	config  *pb.GridFsConfig
 }
 
-func (g *gridFsSource) GetTrainingData() (t *pb.TrainingData, err error) {
+func (g *gridFsDataSource) GetTrainingData() (t *pb.TrainingData, err error) {
 	fs := g.session.DB(g.config.GetDatabase()).GridFS(g.config.GetCollection())
 	file, err := fs.Open(g.config.GetFile())
 	if err != nil {
@@ -39,17 +39,18 @@ func (g *gridFsSource) GetTrainingData() (t *pb.TrainingData, err error) {
 	if err != nil {
 		return
 	}
+
 	glog.Infof("Got %v training examples, %v test examples for config %v",
 		len(t.GetTrain()), len(t.GetTest()), g.config)
 	return
 }
 
-// NewSource is a factory function that returns a new Source given
+// NewDataSource is a factory function that returns a new DataSource given
 // the input DataSourceConfig.
-func NewSource(c *pb.DataSourceConfig, s *mgo.Session) (Source, error) {
+func NewDataSource(c *pb.DataSourceConfig, s *mgo.Session) (DataSource, error) {
 	switch c.GetDataSource() {
 	case pb.DataSource_GRIDFS:
-		return &gridFsSource{
+		return &gridFsDataSource{
 			session: s,
 			config:  c.GetGridFsConfig(),
 		}, nil

@@ -10,7 +10,7 @@ import (
 )
 
 func TestMongoInteraction(t *testing.T) {
-	session, err := mgo.Dial(*mongoServer)
+	session, err := mgo.Dial(*MongoServer)
 	if err != nil {
 		panic(err)
 	}
@@ -19,7 +19,7 @@ func TestMongoInteraction(t *testing.T) {
 	// Optional. Switch the session to a monotonic behavior.
 	session.SetMode(mgo.Monotonic, true)
 
-	c := session.DB(*mongoDatabase).C(*mongoCollection)
+	c := session.DB(*MongoDatabase).C(*MongoCollection)
 	entry := pb.TrainingRow{
 		TrainingStatus: pb.TrainingStatus_UNCLAIMED.Enum(),
 		ForestConfig: &pb.ForestConfig{
