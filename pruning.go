@@ -8,7 +8,7 @@ import (
 )
 
 func splitExamples(t *pb.TreeNode, e Examples) (left Examples, right Examples) {
-	By(func(e1, e2 *Example) bool {
+	By(func(e1, e2 *pb.Example) bool {
 		return e1.Features[t.GetFeature()] < e2.Features[t.GetFeature()]
 	}).Sort(e)
 	splitIndex := 0

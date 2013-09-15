@@ -14,7 +14,7 @@ type boostingTreeGenerator struct {
 func (b *boostingTreeGenerator) doInfluenceTrimming(e Examples) Examples {
 	lossFunction := b.getLossFunction()
 
-	By(func(e1, e2 *Example) bool {
+	By(func(e1, e2 *pb.Example) bool {
 		return lossFunction.GetSampleImportance(e1) < lossFunction.GetSampleImportance(e2)
 	}).Sort(e)
 

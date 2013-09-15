@@ -2,24 +2,12 @@ package decisiontrees
 
 import (
 	"fmt"
+	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"math/rand"
 	"sort"
 )
 
-type Example struct {
-	Label         float64
-	WeightedLabel float64
-	Features      []float64
-}
-
-func (e Example) asBool() bool {
-	if e.Label > 0 {
-		return true
-	}
-	return false
-}
-
-type Examples []*Example
+type Examples []*pb.Example
 
 func (e Examples) subsampleExamples(samplingRate float64) Examples {
 	for i := range e {
@@ -33,7 +21,7 @@ func (e Examples) subsampleExamples(samplingRate float64) Examples {
 func (e Examples) crossValidationSamples(folds int) []Examples {
 	crossValidatedSamples := make([]Examples, folds)
 	for i, _ := range crossValidatedSamples {
-		crossValidatedSamples[i] = make([]*Example, 0, len(e)/folds)
+		crossValidatedSamples[i] = make([]*pb.Example, 0, len(e)/folds)
 	}
 
 	// Do a Fischer-Yates shuffle of the input array
@@ -73,7 +61,7 @@ func (e Examples) String() string {
 	return fmt.Sprint(i...)
 }
 
-type By func(e1, e2 *Example) bool
+type By func(e1, e2 *pb.Example) bool
 
 func (by By) Sort(examples Examples) {
 	es := &exampleSorter{

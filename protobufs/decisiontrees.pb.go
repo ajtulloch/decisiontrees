@@ -127,6 +127,39 @@ func (x *TrainingStatus) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type DataSource int32
+
+const (
+	DataSource_GRIDFS DataSource = 1
+)
+
+var DataSource_name = map[int32]string{
+	1: "GRIDFS",
+}
+var DataSource_value = map[string]int32{
+	"GRIDFS": 1,
+}
+
+func (x DataSource) Enum() *DataSource {
+	p := new(DataSource)
+	*p = x
+	return p
+}
+func (x DataSource) String() string {
+	return proto.EnumName(DataSource_name, int32(x))
+}
+func (x DataSource) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
+}
+func (x *DataSource) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(DataSource_value, data, "DataSource")
+	if err != nil {
+		return err
+	}
+	*x = DataSource(value)
+	return nil
+}
+
 type Feature struct {
 	Feature          *int64   `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty" bson:"feature,omitempty"`
 	Value            *float64 `protobuf:"fixed64,2,opt,name=value" json:"value,omitempty" bson:"value,omitempty"`
@@ -149,6 +182,62 @@ func (m *Feature) GetValue() float64 {
 		return *m.Value
 	}
 	return 0
+}
+
+type Example struct {
+	Label            *float64  `protobuf:"fixed64,1,opt,name=label" json:"label,omitempty" bson:"label,omitempty"`
+	WeightedLabel    *float64  `protobuf:"fixed64,2,opt,name=weightedLabel" json:"weightedLabel,omitempty" bson:"weightedLabel,omitempty"`
+	Features         []float64 `protobuf:"fixed64,3,rep,packed,name=features" json:"features,omitempty" bson:"features,omitempty"`
+	XXX_unrecognized []byte    `json:"-" bson:"-"`
+}
+
+func (m *Example) Reset()         { *m = Example{} }
+func (m *Example) String() string { return proto.CompactTextString(m) }
+func (*Example) ProtoMessage()    {}
+
+func (m *Example) GetLabel() float64 {
+	if m != nil && m.Label != nil {
+		return *m.Label
+	}
+	return 0
+}
+
+func (m *Example) GetWeightedLabel() float64 {
+	if m != nil && m.WeightedLabel != nil {
+		return *m.WeightedLabel
+	}
+	return 0
+}
+
+func (m *Example) GetFeatures() []float64 {
+	if m != nil {
+		return m.Features
+	}
+	return nil
+}
+
+type TrainingData struct {
+	Train            []*Example `protobuf:"bytes,1,rep,name=train" json:"train,omitempty" bson:"train,omitempty"`
+	Test             []*Example `protobuf:"bytes,2,rep,name=test" json:"test,omitempty" bson:"test,omitempty"`
+	XXX_unrecognized []byte     `json:"-" bson:"-"`
+}
+
+func (m *TrainingData) Reset()         { *m = TrainingData{} }
+func (m *TrainingData) String() string { return proto.CompactTextString(m) }
+func (*TrainingData) ProtoMessage()    {}
+
+func (m *TrainingData) GetTrain() []*Example {
+	if m != nil {
+		return m.Train
+	}
+	return nil
+}
+
+func (m *TrainingData) GetTest() []*Example {
+	if m != nil {
+		return m.Test
+	}
+	return nil
 }
 
 type TreeNode struct {
@@ -419,8 +508,9 @@ func (m *ForestConfig) GetAlgorithm() Algorithm {
 }
 
 type GridFsConfig struct {
-	Collection       *string `protobuf:"bytes,1,opt,name=collection" json:"collection,omitempty" bson:"collection,omitempty"`
-	File             *string `protobuf:"bytes,2,opt,name=file" json:"file,omitempty" bson:"file,omitempty"`
+	Database         *string `protobuf:"bytes,1,opt,name=database" json:"database,omitempty" bson:"database,omitempty"`
+	Collection       *string `protobuf:"bytes,2,opt,name=collection,def=fs" json:"collection,omitempty" bson:"collection,omitempty"`
+	File             *string `protobuf:"bytes,3,opt,name=file" json:"file,omitempty" bson:"file,omitempty"`
 	XXX_unrecognized []byte  `json:"-" bson:"-"`
 }
 
@@ -428,11 +518,20 @@ func (m *GridFsConfig) Reset()         { *m = GridFsConfig{} }
 func (m *GridFsConfig) String() string { return proto.CompactTextString(m) }
 func (*GridFsConfig) ProtoMessage()    {}
 
+const Default_GridFsConfig_Collection string = "fs"
+
+func (m *GridFsConfig) GetDatabase() string {
+	if m != nil && m.Database != nil {
+		return *m.Database
+	}
+	return ""
+}
+
 func (m *GridFsConfig) GetCollection() string {
 	if m != nil && m.Collection != nil {
 		return *m.Collection
 	}
-	return ""
+	return Default_GridFsConfig_Collection
 }
 
 func (m *GridFsConfig) GetFile() string {
@@ -442,16 +541,24 @@ func (m *GridFsConfig) GetFile() string {
 	return ""
 }
 
-type DataSource struct {
-	GridFsConfig     *GridFsConfig `protobuf:"bytes,1,opt,name=gridFsConfig" json:"gridFsConfig,omitempty" bson:"gridFsConfig,omitempty"`
+type DataSourceConfig struct {
+	DataSource       *DataSource   `protobuf:"varint,1,opt,name=dataSource,enum=protobufs.DataSource" json:"dataSource,omitempty" bson:"dataSource,omitempty"`
+	GridFsConfig     *GridFsConfig `protobuf:"bytes,2,opt,name=gridFsConfig" json:"gridFsConfig,omitempty" bson:"gridFsConfig,omitempty"`
 	XXX_unrecognized []byte        `json:"-" bson:"-"`
 }
 
-func (m *DataSource) Reset()         { *m = DataSource{} }
-func (m *DataSource) String() string { return proto.CompactTextString(m) }
-func (*DataSource) ProtoMessage()    {}
+func (m *DataSourceConfig) Reset()         { *m = DataSourceConfig{} }
+func (m *DataSourceConfig) String() string { return proto.CompactTextString(m) }
+func (*DataSourceConfig) ProtoMessage()    {}
 
-func (m *DataSource) GetGridFsConfig() *GridFsConfig {
+func (m *DataSourceConfig) GetDataSource() DataSource {
+	if m != nil && m.DataSource != nil {
+		return *m.DataSource
+	}
+	return 0
+}
+
+func (m *DataSourceConfig) GetGridFsConfig() *GridFsConfig {
 	if m != nil {
 		return m.GridFsConfig
 	}
@@ -461,7 +568,7 @@ func (m *DataSource) GetGridFsConfig() *GridFsConfig {
 type TrainingRow struct {
 	ForestConfig     *ForestConfig   `protobuf:"bytes,1,opt,name=forestConfig" json:"forestConfig,omitempty" bson:"forestConfig,omitempty"`
 	Forest           *Forest         `protobuf:"bytes,2,opt,name=forest" json:"forest,omitempty" bson:"forest,omitempty"`
-	DataSource       *DataSource     `protobuf:"bytes,3,opt,name=dataSource" json:"dataSource,omitempty" bson:"dataSource,omitempty"`
+	DataSource       *DataSource     `protobuf:"varint,3,opt,name=dataSource,enum=protobufs.DataSource" json:"dataSource,omitempty" bson:"dataSource,omitempty"`
 	TrainingStatus   *TrainingStatus `protobuf:"varint,4,opt,name=trainingStatus,enum=protobufs.TrainingStatus" json:"trainingStatus,omitempty" bson:"trainingStatus,omitempty"`
 	XXX_unrecognized []byte          `json:"-" bson:"-"`
 }
@@ -484,11 +591,11 @@ func (m *TrainingRow) GetForest() *Forest {
 	return nil
 }
 
-func (m *TrainingRow) GetDataSource() *DataSource {
-	if m != nil {
-		return m.DataSource
+func (m *TrainingRow) GetDataSource() DataSource {
+	if m != nil && m.DataSource != nil {
+		return *m.DataSource
 	}
-	return nil
+	return 0
 }
 
 func (m *TrainingRow) GetTrainingStatus() TrainingStatus {
@@ -502,4 +609,5 @@ func init() {
 	proto.RegisterEnum("protobufs.LossFunction", LossFunction_name, LossFunction_value)
 	proto.RegisterEnum("protobufs.Algorithm", Algorithm_name, Algorithm_value)
 	proto.RegisterEnum("protobufs.TrainingStatus", TrainingStatus_name, TrainingStatus_value)
+	proto.RegisterEnum("protobufs.DataSource", DataSource_name, DataSource_value)
 }

@@ -21,19 +21,19 @@ func constructLoss(e Examples) *lossState {
 	return l
 }
 
-func (l *lossState) addExample(e *Example) {
+func (l *lossState) addExample(e *pb.Example) {
 	l.numExamples += 1
-	delta := e.WeightedLabel - l.averageLabel
+	delta := e.GetWeightedLabel() - l.averageLabel
 	l.averageLabel += delta / float64(l.numExamples)
-	newDelta := e.WeightedLabel - l.averageLabel
+	newDelta := e.GetWeightedLabel() - l.averageLabel
 	l.sumSquaredDivergence += delta * newDelta
 }
 
-func (l *lossState) removeExample(e *Example) {
+func (l *lossState) removeExample(e *pb.Example) {
 	l.numExamples -= 1
-	delta := e.WeightedLabel - l.averageLabel
+	delta := e.GetWeightedLabel() - l.averageLabel
 	l.averageLabel -= delta / float64(l.numExamples)
-	newDelta := e.WeightedLabel - l.averageLabel
+	newDelta := e.GetWeightedLabel() - l.averageLabel
 	l.sumSquaredDivergence -= delta * newDelta
 }
 
@@ -82,12 +82,12 @@ type split struct {
 }
 
 func getBestSplit(examples Examples, feature int) split {
-	examplesCopy := make([]*Example, len(examples))
+	examplesCopy := make([]*pb.Example, len(examples))
 	if copy(examplesCopy, examples) != len(examples) {
 		glog.Fatal("Failed copying all examples for sorting")
 	}
 
-	By(func(e1, e2 *Example) bool {
+	By(func(e1, e2 *pb.Example) bool {
 		return e1.Features[feature] < e2.Features[feature]
 	}).Sort(Examples(examplesCopy))
 
@@ -146,7 +146,7 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 
 	if c.shouldSplit(examples, bestSplit, currentLevel) {
 		glog.Infof("Splitting at level %v with split %v", currentLevel, bestSplit)
-		By(func(e1, e2 *Example) bool {
+		By(func(e1, e2 *pb.Example) bool {
 			return e1.Features[bestSplit.feature] < e2.Features[bestSplit.feature]
 		}).Sort(examples)
 

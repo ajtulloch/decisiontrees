@@ -12,20 +12,20 @@ import (
 )
 
 func constructSmallExamples(numExamples int, numFeatures int) Examples {
-	result := make([]*Example, 0, numExamples)
+	result := make([]*pb.Example, 0, numExamples)
 	for i := 0; i < numExamples; i++ {
-		example := &Example{
+		example := &pb.Example{
 			Features: make([]float64, numFeatures),
 		}
 		sample := rand.NormFloat64()
 		example.Features[rand.Intn(numFeatures)] = sample
 
 		if sample < 0.5 {
-			example.Label = 1.0
-			example.WeightedLabel = 1.0
+			example.Label = proto.Float64(1.0)
+			example.WeightedLabel = proto.Float64(1.0)
 		} else {
-			example.Label = -1.0
-			example.WeightedLabel = -1.0
+			example.Label = proto.Float64(-1.0)
+			example.WeightedLabel = proto.Float64(-1.0)
 		}
 		result = append(result, example)
 	}
@@ -35,26 +35,26 @@ func constructSmallExamples(numExamples int, numFeatures int) Examples {
 // Tests that we split correctly on a trivial example
 // label == f[0] > 0.5
 func TestBestSplit(t *testing.T) {
-	examples := []*Example{
+	examples := []*pb.Example{
 		{
 			Features:      []float64{0.0},
-			Label:         0.0,
-			WeightedLabel: 0.0,
+			Label:         proto.Float64(0.0),
+			WeightedLabel: proto.Float64(0.0),
 		},
 		{
 			Features:      []float64{1.0},
-			Label:         1.0,
-			WeightedLabel: 1.0,
+			Label:         proto.Float64(1.0),
+			WeightedLabel: proto.Float64(1.0),
 		},
 		{
 			Features:      []float64{1.0},
-			Label:         1.0,
-			WeightedLabel: 1.0,
+			Label:         proto.Float64(1.0),
+			WeightedLabel: proto.Float64(1.0),
 		},
 		{
 			Features:      []float64{0.0},
-			Label:         0.0,
-			WeightedLabel: 0.0,
+			Label:         proto.Float64(0.0),
+			WeightedLabel: proto.Float64(0.0),
 		},
 	}
 	bestSplit := getBestSplit(examples, 0 /* feature */)
@@ -87,9 +87,9 @@ func TestRegressionSplitter(t *testing.T) {
 
 func constructBenchmarkExamples(numExamples int, numFeatures int, threshold float64) Examples {
 	glog.Info("Num examples: ", numExamples)
-	result := make([]*Example, 0, numExamples)
+	result := make([]*pb.Example, 0, numExamples)
 	for i := 0; i < numExamples; i++ {
-		example := &Example{
+		example := &pb.Example{
 			Features: make([]float64, numFeatures),
 		}
 		sum := 0.0
@@ -99,9 +99,9 @@ func constructBenchmarkExamples(numExamples int, numFeatures int, threshold floa
 			example.Features[int64(j)] = sample
 		}
 		if sum < threshold {
-			example.Label = 1.0
+			example.Label = proto.Float64(1.0)
 		} else {
-			example.Label = -1.0
+			example.Label = proto.Float64(-1.0)
 		}
 		result = append(result, example)
 	}

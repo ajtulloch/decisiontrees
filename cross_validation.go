@@ -1,6 +1,7 @@
 package decisiontrees
 
 import (
+	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"sync"
 )
 
@@ -14,7 +15,7 @@ func RunCrossValidation(numFolds int, e Examples, f CrossValidationFunc) []inter
 		w.Add(1)
 		go func(pos int) {
 			testingSet := folds[pos]
-			trainingSet := make([]*Example, 0, len(e)*(numFolds-1)/numFolds)
+			trainingSet := make([]*pb.Example, 0, len(e)*(numFolds-1)/numFolds)
 			for i, _ := range folds {
 				if i != pos {
 					trainingSet = append(trainingSet, folds[i]...)

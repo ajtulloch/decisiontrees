@@ -11,6 +11,17 @@ message Feature {
   optional double value = 2;
 }
 
+message Example {
+  optional double label = 1;
+  optional double weightedLabel = 2;
+  repeated double features = 3 [packed=true];
+}
+
+message TrainingData {
+  repeated Example train = 1;
+  repeated Example test = 2;
+}
+
 message TreeNode {
   // feature to split on
   optional int64 feature = 1;
@@ -80,12 +91,18 @@ enum TrainingStatus {
 }
 
 message GridFsConfig {
-  optional string collection = 1;
-  optional string file = 2;
+  optional string database = 1;
+  optional string collection = 2 [default="fs"];
+  optional string file = 3;
 }
 
-message DataSource {
-  optional GridFsConfig gridFsConfig = 1;
+enum DataSource {
+  GRIDFS = 1;
+}
+
+message DataSourceConfig {
+  optional DataSource dataSource = 1;
+  optional GridFsConfig gridFsConfig = 2;
 }
 
 message TrainingRow {
