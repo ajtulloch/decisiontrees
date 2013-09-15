@@ -566,11 +566,11 @@ func (m *DataSourceConfig) GetGridFsConfig() *GridFsConfig {
 }
 
 type TrainingRow struct {
-	ForestConfig     *ForestConfig   `protobuf:"bytes,1,opt,name=forestConfig" json:"forestConfig,omitempty" bson:"forestConfig,omitempty"`
-	Forest           *Forest         `protobuf:"bytes,2,opt,name=forest" json:"forest,omitempty" bson:"forest,omitempty"`
-	DataSource       *DataSource     `protobuf:"varint,3,opt,name=dataSource,enum=protobufs.DataSource" json:"dataSource,omitempty" bson:"dataSource,omitempty"`
-	TrainingStatus   *TrainingStatus `protobuf:"varint,4,opt,name=trainingStatus,enum=protobufs.TrainingStatus" json:"trainingStatus,omitempty" bson:"trainingStatus,omitempty"`
-	XXX_unrecognized []byte          `json:"-" bson:"-"`
+	ForestConfig     *ForestConfig     `protobuf:"bytes,1,opt,name=forestConfig" json:"forestConfig,omitempty" bson:"forestConfig,omitempty"`
+	Forest           *Forest           `protobuf:"bytes,2,opt,name=forest" json:"forest,omitempty" bson:"forest,omitempty"`
+	DataSourceConfig *DataSourceConfig `protobuf:"bytes,3,opt,name=dataSourceConfig" json:"dataSourceConfig,omitempty" bson:"dataSourceConfig,omitempty"`
+	TrainingStatus   *TrainingStatus   `protobuf:"varint,4,opt,name=trainingStatus,enum=protobufs.TrainingStatus" json:"trainingStatus,omitempty" bson:"trainingStatus,omitempty"`
+	XXX_unrecognized []byte            `json:"-" bson:"-"`
 }
 
 func (m *TrainingRow) Reset()         { *m = TrainingRow{} }
@@ -591,11 +591,11 @@ func (m *TrainingRow) GetForest() *Forest {
 	return nil
 }
 
-func (m *TrainingRow) GetDataSource() DataSource {
-	if m != nil && m.DataSource != nil {
-		return *m.DataSource
+func (m *TrainingRow) GetDataSourceConfig() *DataSourceConfig {
+	if m != nil {
+		return m.DataSourceConfig
 	}
-	return 0
+	return nil
 }
 
 func (m *TrainingRow) GetTrainingStatus() TrainingStatus {

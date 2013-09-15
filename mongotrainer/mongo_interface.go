@@ -42,7 +42,7 @@ func (m *MongoTrainer) pollTasks(c chan *trainingTask) {
 			}
 
 			t := &pb.TrainingRow{}
-			err = m.Collection.FindId(id.Id).One(t)
+			err = m.Collection.FindId(id.ID).One(t)
 			if err != nil {
 				glog.Error(err)
 				continue

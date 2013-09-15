@@ -108,6 +108,6 @@ message DataSourceConfig {
 message TrainingRow {
   optional ForestConfig forestConfig = 1;
   optional Forest forest = 2;
-  optional DataSource dataSource = 3;
+  optional DataSourceConfig dataSourceConfig = 3;
   optional TrainingStatus trainingStatus = 4;
 }
