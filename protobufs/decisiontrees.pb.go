@@ -52,10 +52,85 @@ func (x *LossFunction) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type Algorithm int32
+
+const (
+	Algorithm_BOOSTING      Algorithm = 1
+	Algorithm_RANDOM_FOREST Algorithm = 2
+)
+
+var Algorithm_name = map[int32]string{
+	1: "BOOSTING",
+	2: "RANDOM_FOREST",
+}
+var Algorithm_value = map[string]int32{
+	"BOOSTING":      1,
+	"RANDOM_FOREST": 2,
+}
+
+func (x Algorithm) Enum() *Algorithm {
+	p := new(Algorithm)
+	*p = x
+	return p
+}
+func (x Algorithm) String() string {
+	return proto.EnumName(Algorithm_name, int32(x))
+}
+func (x Algorithm) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
+}
+func (x *Algorithm) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(Algorithm_value, data, "Algorithm")
+	if err != nil {
+		return err
+	}
+	*x = Algorithm(value)
+	return nil
+}
+
+type TrainingStatus int32
+
+const (
+	TrainingStatus_UNCLAIMED  TrainingStatus = 1
+	TrainingStatus_PROCESSING TrainingStatus = 2
+	TrainingStatus_FINISHED   TrainingStatus = 3
+)
+
+var TrainingStatus_name = map[int32]string{
+	1: "UNCLAIMED",
+	2: "PROCESSING",
+	3: "FINISHED",
+}
+var TrainingStatus_value = map[string]int32{
+	"UNCLAIMED":  1,
+	"PROCESSING": 2,
+	"FINISHED":   3,
+}
+
+func (x TrainingStatus) Enum() *TrainingStatus {
+	p := new(TrainingStatus)
+	*p = x
+	return p
+}
+func (x TrainingStatus) String() string {
+	return proto.EnumName(TrainingStatus_name, int32(x))
+}
+func (x TrainingStatus) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
+}
+func (x *TrainingStatus) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(TrainingStatus_value, data, "TrainingStatus")
+	if err != nil {
+		return err
+	}
+	*x = TrainingStatus(value)
+	return nil
+}
+
 type Feature struct {
-	Feature          *int64   `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty"`
-	Value            *float64 `protobuf:"fixed64,2,opt,name=value" json:"value,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
+	Feature          *int64   `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty" bson:"feature,omitempty"`
+	Value            *float64 `protobuf:"fixed64,2,opt,name=value" json:"value,omitempty" bson:"value,omitempty"`
+	XXX_unrecognized []byte   `json:"-" bson:"-"`
 }
 
 func (m *Feature) Reset()         { *m = Feature{} }
@@ -78,13 +153,13 @@ func (m *Feature) GetValue() float64 {
 
 type TreeNode struct {
 	// feature to split on
-	Feature *int64 `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty"`
+	Feature *int64 `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty" bson:"feature,omitempty"`
 	// value to split on
-	SplitValue       *float64  `protobuf:"fixed64,2,opt,name=splitValue" json:"splitValue,omitempty"`
-	Left             *TreeNode `protobuf:"bytes,3,opt,name=left" json:"left,omitempty"`
-	Right            *TreeNode `protobuf:"bytes,4,opt,name=right" json:"right,omitempty"`
-	LeafValue        *float64  `protobuf:"fixed64,5,opt,name=leafValue" json:"leafValue,omitempty"`
-	XXX_unrecognized []byte    `json:"-"`
+	SplitValue       *float64  `protobuf:"fixed64,2,opt,name=splitValue" json:"splitValue,omitempty" bson:"splitValue,omitempty"`
+	Left             *TreeNode `protobuf:"bytes,3,opt,name=left" json:"left,omitempty" bson:"left,omitempty"`
+	Right            *TreeNode `protobuf:"bytes,4,opt,name=right" json:"right,omitempty" bson:"right,omitempty"`
+	LeafValue        *float64  `protobuf:"fixed64,5,opt,name=leafValue" json:"leafValue,omitempty" bson:"leafValue,omitempty"`
+	XXX_unrecognized []byte    `json:"-" bson:"-"`
 }
 
 func (m *TreeNode) Reset()         { *m = TreeNode{} }
@@ -127,8 +202,8 @@ func (m *TreeNode) GetLeafValue() float64 {
 }
 
 type Forest struct {
-	Trees            []*TreeNode `protobuf:"bytes,1,rep,name=trees" json:"trees,omitempty"`
-	XXX_unrecognized []byte      `json:"-"`
+	Trees            []*TreeNode `protobuf:"bytes,1,rep,name=trees" json:"trees,omitempty" bson:"trees,omitempty"`
+	XXX_unrecognized []byte      `json:"-" bson:"-"`
 }
 
 func (m *Forest) Reset()         { *m = Forest{} }
@@ -143,11 +218,11 @@ func (m *Forest) GetTrees() []*TreeNode {
 }
 
 type SplittingConstraints struct {
-	MaximumLevels              *int64   `protobuf:"varint,1,opt,name=maximumLevels" json:"maximumLevels,omitempty"`
-	MinimumAverageGain         *float64 `protobuf:"fixed64,2,opt,name=minimumAverageGain" json:"minimumAverageGain,omitempty"`
-	MinimumSamplesAtLeaf       *int64   `protobuf:"varint,3,opt,name=minimumSamplesAtLeaf" json:"minimumSamplesAtLeaf,omitempty"`
-	FeaturesConsideredFraction *float64 `protobuf:"fixed64,4,opt,name=featuresConsideredFraction" json:"featuresConsideredFraction,omitempty"`
-	XXX_unrecognized           []byte   `json:"-"`
+	MaximumLevels              *int64   `protobuf:"varint,1,opt,name=maximumLevels" json:"maximumLevels,omitempty" bson:"maximumLevels,omitempty"`
+	MinimumAverageGain         *float64 `protobuf:"fixed64,2,opt,name=minimumAverageGain" json:"minimumAverageGain,omitempty" bson:"minimumAverageGain,omitempty"`
+	MinimumSamplesAtLeaf       *int64   `protobuf:"varint,3,opt,name=minimumSamplesAtLeaf" json:"minimumSamplesAtLeaf,omitempty" bson:"minimumSamplesAtLeaf,omitempty"`
+	FeaturesConsideredFraction *float64 `protobuf:"fixed64,4,opt,name=featuresConsideredFraction" json:"featuresConsideredFraction,omitempty" bson:"featuresConsideredFraction,omitempty"`
+	XXX_unrecognized           []byte   `json:"-" bson:"-"`
 }
 
 func (m *SplittingConstraints) Reset()         { *m = SplittingConstraints{} }
@@ -183,8 +258,8 @@ func (m *SplittingConstraints) GetFeaturesConsideredFraction() float64 {
 }
 
 type PruningConstraints struct {
-	CrossValidationFolds *int64 `protobuf:"varint,1,opt,name=crossValidationFolds" json:"crossValidationFolds,omitempty"`
-	XXX_unrecognized     []byte `json:"-"`
+	CrossValidationFolds *int64 `protobuf:"varint,1,opt,name=crossValidationFolds" json:"crossValidationFolds,omitempty" bson:"crossValidationFolds,omitempty"`
+	XXX_unrecognized     []byte `json:"-" bson:"-"`
 }
 
 func (m *PruningConstraints) Reset()         { *m = PruningConstraints{} }
@@ -199,9 +274,9 @@ func (m *PruningConstraints) GetCrossValidationFolds() int64 {
 }
 
 type InfluenceTrimmingConfig struct {
-	Alpha            *float64 `protobuf:"fixed64,1,opt,name=alpha" json:"alpha,omitempty"`
-	WarmupRounds     *int64   `protobuf:"varint,2,opt,name=warmupRounds" json:"warmupRounds,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
+	Alpha            *float64 `protobuf:"fixed64,1,opt,name=alpha" json:"alpha,omitempty" bson:"alpha,omitempty"`
+	WarmupRounds     *int64   `protobuf:"varint,2,opt,name=warmupRounds" json:"warmupRounds,omitempty" bson:"warmupRounds,omitempty"`
+	XXX_unrecognized []byte   `json:"-" bson:"-"`
 }
 
 func (m *InfluenceTrimmingConfig) Reset()         { *m = InfluenceTrimmingConfig{} }
@@ -223,9 +298,9 @@ func (m *InfluenceTrimmingConfig) GetWarmupRounds() int64 {
 }
 
 type LossFunctionConfig struct {
-	LossFunction     *LossFunction `protobuf:"varint,1,opt,name=lossFunction,enum=protobufs.LossFunction" json:"lossFunction,omitempty"`
-	HuberAlpha       *float64      `protobuf:"fixed64,2,opt,name=huberAlpha" json:"huberAlpha,omitempty"`
-	XXX_unrecognized []byte        `json:"-"`
+	LossFunction     *LossFunction `protobuf:"varint,1,opt,name=lossFunction,enum=protobufs.LossFunction" json:"lossFunction,omitempty" bson:"lossFunction,omitempty"`
+	HuberAlpha       *float64      `protobuf:"fixed64,2,opt,name=huberAlpha" json:"huberAlpha,omitempty" bson:"huberAlpha,omitempty"`
+	XXX_unrecognized []byte        `json:"-" bson:"-"`
 }
 
 func (m *LossFunctionConfig) Reset()         { *m = LossFunctionConfig{} }
@@ -247,8 +322,8 @@ func (m *LossFunctionConfig) GetHuberAlpha() float64 {
 }
 
 type ShrinkageConfig struct {
-	Shrinkage        *float64 `protobuf:"fixed64,1,opt,name=shrinkage" json:"shrinkage,omitempty"`
-	XXX_unrecognized []byte   `json:"-"`
+	Shrinkage        *float64 `protobuf:"fixed64,1,opt,name=shrinkage" json:"shrinkage,omitempty" bson:"shrinkage,omitempty"`
+	XXX_unrecognized []byte   `json:"-" bson:"-"`
 }
 
 func (m *ShrinkageConfig) Reset()         { *m = ShrinkageConfig{} }
@@ -264,8 +339,8 @@ func (m *ShrinkageConfig) GetShrinkage() float64 {
 
 type StochasticityConfig struct {
 	// Take a random sample of training data per round
-	PerRoundSamplingRate *float64 `protobuf:"fixed64,1,opt,name=perRoundSamplingRate" json:"perRoundSamplingRate,omitempty"`
-	XXX_unrecognized     []byte   `json:"-"`
+	PerRoundSamplingRate *float64 `protobuf:"fixed64,1,opt,name=perRoundSamplingRate" json:"perRoundSamplingRate,omitempty" bson:"perRoundSamplingRate,omitempty"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
 }
 
 func (m *StochasticityConfig) Reset()         { *m = StochasticityConfig{} }
@@ -280,13 +355,14 @@ func (m *StochasticityConfig) GetPerRoundSamplingRate() float64 {
 }
 
 type ForestConfig struct {
-	NumWeakLearners         *int64                   `protobuf:"varint,1,opt,name=numWeakLearners" json:"numWeakLearners,omitempty"`
-	SplittingConstraints    *SplittingConstraints    `protobuf:"bytes,2,opt,name=splittingConstraints" json:"splittingConstraints,omitempty"`
-	LossFunctionConfig      *LossFunctionConfig      `protobuf:"bytes,3,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty"`
-	InfluenceTrimmingConfig *InfluenceTrimmingConfig `protobuf:"bytes,4,opt,name=influenceTrimmingConfig" json:"influenceTrimmingConfig,omitempty"`
-	ShrinkageConfig         *ShrinkageConfig         `protobuf:"bytes,5,opt,name=shrinkageConfig" json:"shrinkageConfig,omitempty"`
-	StochasticityConfig     *StochasticityConfig     `protobuf:"bytes,6,opt,name=stochasticityConfig" json:"stochasticityConfig,omitempty"`
-	XXX_unrecognized        []byte                   `json:"-"`
+	NumWeakLearners         *int64                   `protobuf:"varint,1,opt,name=numWeakLearners" json:"numWeakLearners,omitempty" bson:"numWeakLearners,omitempty"`
+	SplittingConstraints    *SplittingConstraints    `protobuf:"bytes,2,opt,name=splittingConstraints" json:"splittingConstraints,omitempty" bson:"splittingConstraints,omitempty"`
+	LossFunctionConfig      *LossFunctionConfig      `protobuf:"bytes,3,opt,name=lossFunctionConfig" json:"lossFunctionConfig,omitempty" bson:"lossFunctionConfig,omitempty"`
+	InfluenceTrimmingConfig *InfluenceTrimmingConfig `protobuf:"bytes,4,opt,name=influenceTrimmingConfig" json:"influenceTrimmingConfig,omitempty" bson:"influenceTrimmingConfig,omitempty"`
+	ShrinkageConfig         *ShrinkageConfig         `protobuf:"bytes,5,opt,name=shrinkageConfig" json:"shrinkageConfig,omitempty" bson:"shrinkageConfig,omitempty"`
+	StochasticityConfig     *StochasticityConfig     `protobuf:"bytes,6,opt,name=stochasticityConfig" json:"stochasticityConfig,omitempty" bson:"stochasticityConfig,omitempty"`
+	Algorithm               *Algorithm               `protobuf:"varint,7,opt,name=algorithm,enum=protobufs.Algorithm" json:"algorithm,omitempty" bson:"algorithm,omitempty"`
+	XXX_unrecognized        []byte                   `json:"-" bson:"-"`
 }
 
 func (m *ForestConfig) Reset()         { *m = ForestConfig{} }
@@ -335,6 +411,95 @@ func (m *ForestConfig) GetStochasticityConfig() *StochasticityConfig {
 	return nil
 }
 
+func (m *ForestConfig) GetAlgorithm() Algorithm {
+	if m != nil && m.Algorithm != nil {
+		return *m.Algorithm
+	}
+	return 0
+}
+
+type GridFsConfig struct {
+	Collection       *string `protobuf:"bytes,1,opt,name=collection" json:"collection,omitempty" bson:"collection,omitempty"`
+	File             *string `protobuf:"bytes,2,opt,name=file" json:"file,omitempty" bson:"file,omitempty"`
+	XXX_unrecognized []byte  `json:"-" bson:"-"`
+}
+
+func (m *GridFsConfig) Reset()         { *m = GridFsConfig{} }
+func (m *GridFsConfig) String() string { return proto.CompactTextString(m) }
+func (*GridFsConfig) ProtoMessage()    {}
+
+func (m *GridFsConfig) GetCollection() string {
+	if m != nil && m.Collection != nil {
+		return *m.Collection
+	}
+	return ""
+}
+
+func (m *GridFsConfig) GetFile() string {
+	if m != nil && m.File != nil {
+		return *m.File
+	}
+	return ""
+}
+
+type DataSource struct {
+	GridFsConfig     *GridFsConfig `protobuf:"bytes,1,opt,name=gridFsConfig" json:"gridFsConfig,omitempty" bson:"gridFsConfig,omitempty"`
+	XXX_unrecognized []byte        `json:"-" bson:"-"`
+}
+
+func (m *DataSource) Reset()         { *m = DataSource{} }
+func (m *DataSource) String() string { return proto.CompactTextString(m) }
+func (*DataSource) ProtoMessage()    {}
+
+func (m *DataSource) GetGridFsConfig() *GridFsConfig {
+	if m != nil {
+		return m.GridFsConfig
+	}
+	return nil
+}
+
+type TrainingRow struct {
+	ForestConfig     *ForestConfig   `protobuf:"bytes,1,opt,name=forestConfig" json:"forestConfig,omitempty" bson:"forestConfig,omitempty"`
+	Forest           *Forest         `protobuf:"bytes,2,opt,name=forest" json:"forest,omitempty" bson:"forest,omitempty"`
+	DataSource       *DataSource     `protobuf:"bytes,3,opt,name=dataSource" json:"dataSource,omitempty" bson:"dataSource,omitempty"`
+	TrainingStatus   *TrainingStatus `protobuf:"varint,4,opt,name=trainingStatus,enum=protobufs.TrainingStatus" json:"trainingStatus,omitempty" bson:"trainingStatus,omitempty"`
+	XXX_unrecognized []byte          `json:"-" bson:"-"`
+}
+
+func (m *TrainingRow) Reset()         { *m = TrainingRow{} }
+func (m *TrainingRow) String() string { return proto.CompactTextString(m) }
+func (*TrainingRow) ProtoMessage()    {}
+
+func (m *TrainingRow) GetForestConfig() *ForestConfig {
+	if m != nil {
+		return m.ForestConfig
+	}
+	return nil
+}
+
+func (m *TrainingRow) GetForest() *Forest {
+	if m != nil {
+		return m.Forest
+	}
+	return nil
+}
+
+func (m *TrainingRow) GetDataSource() *DataSource {
+	if m != nil {
+		return m.DataSource
+	}
+	return nil
+}
+
+func (m *TrainingRow) GetTrainingStatus() TrainingStatus {
+	if m != nil && m.TrainingStatus != nil {
+		return *m.TrainingStatus
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("protobufs.LossFunction", LossFunction_name, LossFunction_value)
+	proto.RegisterEnum("protobufs.Algorithm", Algorithm_name, Algorithm_value)
+	proto.RegisterEnum("protobufs.TrainingStatus", TrainingStatus_name, TrainingStatus_value)
 }

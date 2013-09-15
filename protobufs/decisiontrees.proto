@@ -57,6 +57,11 @@ message StochasticityConfig {
   optional double perRoundSamplingRate = 1;
 }
 
+enum Algorithm {
+  BOOSTING = 1;
+  RANDOM_FOREST = 2;
+}
+
 message ForestConfig {
   optional int64 numWeakLearners = 1;
   optional SplittingConstraints splittingConstraints = 2;
@@ -64,4 +69,28 @@ message ForestConfig {
   optional InfluenceTrimmingConfig influenceTrimmingConfig = 4;
   optional ShrinkageConfig shrinkageConfig = 5;
   optional StochasticityConfig stochasticityConfig = 6;
+  optional Algorithm algorithm = 7;
+}
+
+
+enum TrainingStatus {
+  UNCLAIMED = 1;
+  PROCESSING = 2;
+  FINISHED = 3;
+}
+
+message GridFsConfig {
+  optional string collection = 1;
+  optional string file = 2;
+}
+
+message DataSource {
+  optional GridFsConfig gridFsConfig = 1;
+}
+
+message TrainingRow {
+  optional ForestConfig forestConfig = 1;
+  optional Forest forest = 2;
+  optional DataSource dataSource = 3;
+  optional TrainingStatus trainingStatus = 4;
 }

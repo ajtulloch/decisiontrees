@@ -15,6 +15,8 @@ fmt:
 
 proto: 
 	find . -iname *.proto | xargs -J %  protoc --go_out=. %
+	# Pretty hacky way to add BSON annotations to our Protobuf structs
+	find . -iname *.pb.go | xargs -J % perl -pi -e 's|json:"(.*)"|json:\"$$1\" bson:\"$$1\"|g' %
 
 test:
 	go test ./...
