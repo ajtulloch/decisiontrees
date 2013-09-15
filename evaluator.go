@@ -9,13 +9,13 @@ import (
 // Evaluator implements the evaluator of a decision tree given
 // a feature vector
 type Evaluator interface {
-	evaluate(features []float64) float64
+	Evaluate(features []float64) float64
 }
 
 // EvaluatorFunc implements the Evaluator interface
 type EvaluatorFunc func(features []float64) float64
 
-func (f EvaluatorFunc) evaluate(features []float64) float64 {
+func (f EvaluatorFunc) Evaluate(features []float64) float64 {
 	return f(features)
 }
 
@@ -31,15 +31,15 @@ func isLeaf(node *pb.TreeNode) bool {
 	return node.LeafValue != nil
 }
 
-func (f *forestEvaluator) evaluate(features []float64) float64 {
+func (f *forestEvaluator) Evaluate(features []float64) float64 {
 	sum := 0.0
 	for _, t := range f.forest.GetTrees() {
-		sum += (&treeEvaluator{t}).evaluate(features)
+		sum += (&treeEvaluator{t}).Evaluate(features)
 	}
 	return sum
 }
 
-func (t *treeEvaluator) evaluate(features []float64) float64 {
+func (t *treeEvaluator) Evaluate(features []float64) float64 {
 	node := t.tree
 	for !isLeaf(node) {
 		if features[node.GetFeature()] < node.GetSplitValue() {
@@ -88,7 +88,7 @@ func validateTree(t *pb.TreeNode) error {
 	return nil
 }
 
-func (f *fastTreeEvaluator) evaluate(features []float64) float64 {
+func (f *fastTreeEvaluator) Evaluate(features []float64) float64 {
 	glog.Info("Evaluating fast tree")
 	node := f.nodes[0]
 	for node.feature != leafFeatureID {
@@ -145,10 +145,10 @@ type fastForestEvaluator struct {
 	trees []Evaluator
 }
 
-func (f *fastForestEvaluator) evaluate(features []float64) float64 {
+func (f *fastForestEvaluator) Evaluate(features []float64) float64 {
 	sum := 0.0
 	for _, t := range f.trees {
-		sum += t.evaluate(features)
+		sum += t.Evaluate(features)
 	}
 	return sum
 }

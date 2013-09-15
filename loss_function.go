@@ -22,13 +22,13 @@ type logitLoss struct {
 
 func (l logitLoss) UpdateWeightedLabels(e Examples) {
 	for _, ex := range e {
-		prediction := l.evaluator.evaluate(ex.Features)
+		prediction := l.evaluator.Evaluate(ex.Features)
 		ex.WeightedLabel = proto.Float64(2 * ex.GetLabel() / (1 + math.Exp(2*ex.GetLabel()*prediction)))
 	}
 }
 
 func (l logitLoss) GetSampleImportance(ex *pb.Example) float64 {
-	prediction := l.evaluator.evaluate(ex.Features)
+	prediction := l.evaluator.Evaluate(ex.Features)
 	weightedLabel := 2 * ex.GetLabel() / (1 + math.Exp(2*ex.GetLabel()*prediction))
 	return math.Abs(weightedLabel) * (2 - math.Abs(weightedLabel))
 }
@@ -88,7 +88,7 @@ func (l leastAbsoluteDeviationLoss) GetPrior(e Examples) float64 {
 }
 
 func (l leastAbsoluteDeviationLoss) residual(ex *pb.Example) float64 {
-	return ex.GetLabel() - l.evaluator.evaluate(ex.Features)
+	return ex.GetLabel() - l.evaluator.Evaluate(ex.Features)
 }
 
 func (l leastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
@@ -100,7 +100,7 @@ func (l leastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
 
 func (l leastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
 	for _, ex := range e {
-		prediction := l.evaluator.evaluate(ex.Features)
+		prediction := l.evaluator.Evaluate(ex.Features)
 		if ex.GetLabel()-prediction > 0 {
 			ex.WeightedLabel = proto.Float64(1.0)
 		} else {
@@ -129,7 +129,7 @@ func (h huberLoss) GetSampleImportance(ex *pb.Example) float64 {
 }
 
 func (h huberLoss) residual(ex *pb.Example) float64 {
-	return ex.GetLabel() - h.evaluator.evaluate(ex.Features)
+	return ex.GetLabel() - h.evaluator.Evaluate(ex.Features)
 }
 
 func (h huberLoss) UpdateWeightedLabels(e Examples) {

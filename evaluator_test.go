@@ -69,8 +69,8 @@ func TestTreeEvaluation(t *testing.T) {
 
 		for j := 0; j < numEvaluations; j++ {
 			fv := randomFeatureVector(numFeatures)
-			fast := fastEvaluator.evaluate(fv)
-			slow := slowEvaluator.evaluate(fv)
+			fast := fastEvaluator.Evaluate(fv)
+			slow := slowEvaluator.Evaluate(fv)
 			if fast != slow {
 				t.Errorf("Tree %+v, fast: %v, slow: %v", forest.String(), fast, slow)
 			}
@@ -92,7 +92,7 @@ func benchEvaluator(f func(*pb.Forest) Evaluator, b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		glog.Info("Evaluating example")
-		evaluator.evaluate(featureVectors[i])
+		evaluator.Evaluate(featureVectors[i])
 	}
 }
 
