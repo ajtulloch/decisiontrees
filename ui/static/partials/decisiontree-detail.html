@@ -1,0 +1,15 @@
+<h1>Ensemble with {{forest.trees.length}} weak learners</h1>
+
+<h2>Training Configuration</h2>
+<pre>{{ trainingRow.forestConfig | json }}</pre>
+ 
+<table class="table table-bordered">
+  <tbody>
+    <tr ng-repeat="tree in trainingRow.forest.trees">
+      <td> 
+        <tree-visualization tree="tree"></tree-visualization>
+        <pre>{{ tree | json }}</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>

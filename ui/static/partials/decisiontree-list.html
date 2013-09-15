@@ -1,0 +1,20 @@
+<h1>Decision Tree Training Monitor</h1>
+<div class="container-narrow">
+  <div class="row-fluid">
+    <div class="span2">
+    </div>
+    <div class="span4">
+      <!--Body content-->
+      <table class="table">
+        <tr>
+          <th>Task ID</th>
+          <th>Number of Weak Learners</th>
+        </td>
+        <tr ng-repeat="tree in trees">
+          <td><a href="#/decisiontrees/{{tree._id}}">{{tree._id}}</a></td>
+          <td>{{tree.forestConfig.numWeakLearners}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
