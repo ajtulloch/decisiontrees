@@ -27,4 +27,7 @@ testv:
 install:
 	go install ./...
 
+lint:
+	find . -iname '*.go' | grep -v protobufs | xargs golint 
+
 .PHONY: coverage dependencies test
