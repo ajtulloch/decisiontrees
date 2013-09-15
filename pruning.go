@@ -8,7 +8,7 @@ import (
 )
 
 func splitExamples(t *pb.TreeNode, e Examples) (left Examples, right Examples) {
-	By(func(e1, e2 *pb.Example) bool {
+	by(func(e1, e2 *pb.Example) bool {
 		return e1.Features[t.GetFeature()] < e2.Features[t.GetFeature()]
 	}).Sort(e)
 	splitIndex := 0
@@ -22,8 +22,8 @@ func splitExamples(t *pb.TreeNode, e Examples) (left Examples, right Examples) {
 	return
 }
 
-// Returns the mapping of the current node to the new node.
-// Returns mapped node and a boolean representing whether we should continue traversal
+// TreeMapperFunc returns the mapped node and a boolean representing whether
+// we should continue traversal
 type TreeMapperFunc func(t *pb.TreeNode, e Examples) (*pb.TreeNode, bool)
 
 func mapTree(t *pb.TreeNode, e Examples, m TreeMapperFunc) *pb.TreeNode {
@@ -50,22 +50,23 @@ func weakestLinkCostFunction(t *pb.TreeNode, e Examples) (float64, int) {
 		leftSquaredDivergence, leftNodes := weakestLinkCostFunction(t.GetLeft(), left)
 		rightSquaredDivergence, rightNodes := weakestLinkCostFunction(t.GetRight(), right)
 		return leftSquaredDivergence + rightSquaredDivergence, leftNodes + rightNodes
-	} else {
-		return constructLoss(e).sumSquaredDivergence, 1
 	}
+
+	return constructLoss(e).sumSquaredDivergence, 1
 }
 
-type Pruner struct {
+type pruner struct {
 	pruningConstraints pb.PruningConstraints
 	lossFunction       LossFunction
 }
 
-type PrunedStage struct {
+type prunedStage struct {
 	alpha float64
 	tree  *pb.TreeNode
 }
 
-func (p *Pruner) pruneTree(t *pb.TreeNode, e Examples) PrunedStage {
+//
+func (p *pruner) pruneTree(t *pb.TreeNode, e Examples) prunedStage {
 	bestNode, bestCost, bestLeaves := &pb.TreeNode{}, math.MaxFloat64, 0
 	mapTree(t, e, TreeMapperFunc(func(n *pb.TreeNode, ex Examples) (*pb.TreeNode, bool) {
 		nodeSquaredDivergence, nodeLeaves := weakestLinkCostFunction(n, ex)
@@ -93,15 +94,15 @@ func (p *Pruner) pruneTree(t *pb.TreeNode, e Examples) PrunedStage {
 
 	rootCost, rootLeaves := weakestLinkCostFunction(t, e)
 	alpha := (rootCost - bestCost) / float64(rootLeaves-bestLeaves)
-	return PrunedStage{
+	return prunedStage{
 		alpha: alpha,
 		tree:  prunedTree,
 	}
 }
 
-func (p *Pruner) constructPrunedSequence(originalTree *pb.TreeNode, e Examples) []PrunedStage {
-	sequence := make([]PrunedStage, 0)
-	sequence = append(sequence, PrunedStage{0.0, originalTree})
+func (p *pruner) constructPrunedSequence(originalTree *pb.TreeNode, e Examples) []prunedStage {
+	sequence := make([]prunedStage, 0)
+	sequence = append(sequence, prunedStage{0.0, originalTree})
 	for {
 		lastPruned := sequence[len(sequence)-1]
 		if isLeaf(lastPruned.tree) {
@@ -114,11 +115,11 @@ func (p *Pruner) constructPrunedSequence(originalTree *pb.TreeNode, e Examples) 
 	return sequence
 }
 
-func (p *Pruner) Prune(t *pb.TreeNode, trainingSet Examples, testingSet Examples) *pb.TreeNode {
+func (p *pruner) Prune(t *pb.TreeNode, trainingSet Examples, testingSet Examples) *pb.TreeNode {
 	prunedSequence := p.constructPrunedSequence(t, trainingSet)
 	result := make([]float64, 0, len(prunedSequence))
 	w := sync.WaitGroup{}
-	for i, _ := range prunedSequence {
+	for i := range prunedSequence {
 		w.Add(1)
 		go func(pos int) {
 			rootCost, _ := weakestLinkCostFunction(prunedSequence[pos].tree, testingSet)

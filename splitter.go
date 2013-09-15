@@ -4,6 +4,6 @@ import (
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 )
 
-type Splitter interface {
+type splitter interface {
 	GenerateTree(examples Examples) *pb.TreeNode
 }

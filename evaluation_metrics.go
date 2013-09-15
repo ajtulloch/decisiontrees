@@ -6,26 +6,26 @@ import (
 	"sort"
 )
 
-type LabelledPrediction struct {
+type labelledPrediction struct {
 	Label      bool
 	Prediction float64
 }
 
-type LabelledPredictions []LabelledPrediction
+type labelledPredictions []labelledPrediction
 
-func (l LabelledPredictions) Len() int {
+func (l labelledPredictions) Len() int {
 	return len(l)
 }
 
-func (l LabelledPredictions) Swap(i int, j int) {
+func (l labelledPredictions) Swap(i int, j int) {
 	l[i], l[j] = l[j], l[i]
 }
 
-func (l LabelledPredictions) Less(i int, j int) bool {
+func (l labelledPredictions) Less(i int, j int) bool {
 	return l[i].Prediction < l[j].Prediction
 }
 
-func (l LabelledPredictions) ROC() float64 {
+func (l labelledPredictions) ROC() float64 {
 	sort.Sort(l)
 	numPositives, numNegatives, weightedSum := 0, 0, 0
 	for _, e := range l {
@@ -39,7 +39,7 @@ func (l LabelledPredictions) ROC() float64 {
 	return float64(weightedSum) / float64(numPositives*numNegatives)
 }
 
-func (l LabelledPredictions) String() string {
+func (l labelledPredictions) String() string {
 	return fmt.Sprintf(
 		"Size: %v\nROC: %v\nCalibration: %v\nNormalized Entropy: %v\nPositives: %v",
 		l.Len(),
@@ -49,7 +49,7 @@ func (l LabelledPredictions) String() string {
 		l.numPositives())
 }
 
-func (l LabelledPredictions) numPositives() int {
+func (l labelledPredictions) numPositives() int {
 	s := 0
 	for _, e := range l {
 		if e.Label {
@@ -59,7 +59,7 @@ func (l LabelledPredictions) numPositives() int {
 	return s
 }
 
-func (l LabelledPredictions) LogScore() float64 {
+func (l labelledPredictions) LogScore() float64 {
 	cumulativeLogLoss := 0.0
 	for _, e := range l {
 		if e.Label {
@@ -71,7 +71,7 @@ func (l LabelledPredictions) LogScore() float64 {
 	return cumulativeLogLoss / float64(l.Len())
 }
 
-func (l LabelledPredictions) Calibration() float64 {
+func (l labelledPredictions) Calibration() float64 {
 	numPositives, sumPredictions := 0, 0.0
 	for _, e := range l {
 		sumPredictions += e.Prediction
@@ -82,7 +82,7 @@ func (l LabelledPredictions) Calibration() float64 {
 	return float64(sumPredictions) / float64(numPositives)
 }
 
-func (l LabelledPredictions) NormalizedEntropy() float64 {
+func (l labelledPredictions) NormalizedEntropy() float64 {
 	numPositives := 0
 	for _, e := range l {
 		if e.Label {

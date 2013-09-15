@@ -65,7 +65,7 @@ func TestTreeEvaluation(t *testing.T) {
 		}
 
 		fastEvaluator := evaluator
-		slowEvaluator := &ForestEvaluator{forest}
+		slowEvaluator := &forestEvaluator{forest}
 
 		for j := 0; j < numEvaluations; j++ {
 			fv := randomFeatureVector(numFeatures)
@@ -112,7 +112,7 @@ func BenchmarkFastTreeEvaluation(b *testing.B) {
 func BenchmarkNaiveTreeEvaluation(b *testing.B) {
 	flag.Parse()
 	f := func(forest *pb.Forest) Evaluator {
-		return &ForestEvaluator{forest}
+		return &forestEvaluator{forest}
 	}
 	benchEvaluator(f, b)
 }

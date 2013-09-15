@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-var dataset = LabelledPredictions([]LabelledPrediction{
-	LabelledPrediction{false, 0.0},
-	LabelledPrediction{true, 0.0},
+var dataset = labelledPredictions([]labelledPrediction{
+	labelledPrediction{false, 0.0},
+	labelledPrediction{true, 0.0},
 })
 
-func randomDataset(size int, average float64) LabelledPredictions {
-	predictions := LabelledPredictions(make([]LabelledPrediction, size))
-	for i, _ := range predictions {
+func randomDataset(size int, average float64) labelledPredictions {
+	predictions := labelledPredictions(make([]labelledPrediction, size))
+	for i := range predictions {
 		predictions[i].Prediction = average
 		predictions[i].Label = rand.Float64() < average
 	}

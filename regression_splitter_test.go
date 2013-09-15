@@ -71,8 +71,8 @@ func TestBestSplit(t *testing.T) {
 
 func TestRegressionSplitter(t *testing.T) {
 	examples := constructSmallExamples(5, 5)
-	rs := &RegressionSplitter{
-		lossFunction: LogitLoss{
+	rs := &regressionSplitter{
+		lossFunction: logitLoss{
 			evaluator: EvaluatorFunc(func(features []float64) float64 { return 0.5 }),
 		},
 		splittingConstraints: &pb.SplittingConstraints{

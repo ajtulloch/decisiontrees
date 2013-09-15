@@ -21,7 +21,7 @@ type gridFsSource struct {
 	config  *pb.GridFsConfig
 }
 
-func (g *gridFsSource) GetExamples() (t *pb.TrainingData, err error) {
+func (g *gridFsSource) GetTrainingData() (t *pb.TrainingData, err error) {
 	fs := g.session.DB(g.config.GetDatabase()).GridFS(g.config.GetCollection())
 	file, err := fs.Open(g.config.GetFile())
 	if err != nil {
@@ -40,14 +40,14 @@ func (g *gridFsSource) GetExamples() (t *pb.TrainingData, err error) {
 		return
 	}
 	glog.Infof("Got %v training examples, %v test examples for config %v",
-		len(result.GetTrain()), len(result.GetTest()), g.config)
+		len(t.GetTrain()), len(t.GetTest()), g.config)
 	return
 }
 
 // NewSource is a factory function that returns a new Source given
 // the input DataSourceConfig.
 func NewSource(c *pb.DataSourceConfig, s *mgo.Session) (Source, error) {
-	switch c.GetDataSource {
+	switch c.GetDataSource() {
 	case pb.DataSource_GRIDFS:
 		return &gridFsSource{
 			session: s,

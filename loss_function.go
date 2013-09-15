@@ -7,6 +7,8 @@ import (
 	"math"
 )
 
+// LossFunction is an arbitrary loss function used
+// in computing decision trees
 type LossFunction interface {
 	UpdateWeightedLabels(e Examples)
 	GetPrior(e Examples) float64
@@ -14,18 +16,18 @@ type LossFunction interface {
 	GetSampleImportance(ex *pb.Example) float64
 }
 
-type LogitLoss struct {
+type logitLoss struct {
 	evaluator Evaluator
 }
 
-func (l LogitLoss) UpdateWeightedLabels(e Examples) {
+func (l logitLoss) UpdateWeightedLabels(e Examples) {
 	for _, ex := range e {
 		prediction := l.evaluator.evaluate(ex.Features)
 		ex.WeightedLabel = proto.Float64(2 * ex.GetLabel() / (1 + math.Exp(2*ex.GetLabel()*prediction)))
 	}
 }
 
-func (l LogitLoss) GetSampleImportance(ex *pb.Example) float64 {
+func (l logitLoss) GetSampleImportance(ex *pb.Example) float64 {
 	prediction := l.evaluator.evaluate(ex.Features)
 	weightedLabel := 2 * ex.GetLabel() / (1 + math.Exp(2*ex.GetLabel()*prediction))
 	return math.Abs(weightedLabel) * (2 - math.Abs(weightedLabel))
@@ -46,7 +48,7 @@ const (
 	maxLogitPrior = 20.0
 )
 
-func (l LogitLoss) GetPrior(e Examples) float64 {
+func (l logitLoss) GetPrior(e Examples) float64 {
 	if len(e) == 0 {
 		return 0.0
 	}
@@ -62,7 +64,7 @@ func (l LogitLoss) GetPrior(e Examples) float64 {
 		maxLogitPrior)
 }
 
-func (l LogitLoss) GetLeafWeight(e Examples) float64 {
+func (l logitLoss) GetLeafWeight(e Examples) float64 {
 	numerator, denominator := 0.0, 0.0
 	for _, example := range e {
 		numerator += example.GetLabel()
@@ -71,32 +73,32 @@ func (l LogitLoss) GetLeafWeight(e Examples) float64 {
 	return numerator / denominator
 }
 
-type LeastAbsoluteDeviationLoss struct {
+type leastAbsoluteDeviationLoss struct {
 	evaluator Evaluator
 }
 
-func (l LeastAbsoluteDeviationLoss) GetSampleImportance(ex *pb.Example) float64 {
+func (l leastAbsoluteDeviationLoss) GetSampleImportance(ex *pb.Example) float64 {
 	return 1.0
 }
 
-func (l LeastAbsoluteDeviationLoss) GetPrior(e Examples) float64 {
+func (l leastAbsoluteDeviationLoss) GetPrior(e Examples) float64 {
 	// Return the median label
-	By(func(e1, e2 *pb.Example) bool { return e1.GetLabel() < e2.GetLabel() }).Sort(e)
+	by(func(e1, e2 *pb.Example) bool { return e1.GetLabel() < e2.GetLabel() }).Sort(e)
 	return e[len(e)/2].GetLabel()
 }
 
-func (l LeastAbsoluteDeviationLoss) residual(ex *pb.Example) float64 {
+func (l leastAbsoluteDeviationLoss) residual(ex *pb.Example) float64 {
 	return ex.GetLabel() - l.evaluator.evaluate(ex.Features)
 }
 
-func (l LeastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
-	By(func(e1, e2 *pb.Example) bool {
+func (l leastAbsoluteDeviationLoss) GetLeafWeight(e Examples) float64 {
+	by(func(e1, e2 *pb.Example) bool {
 		return l.residual(e1) < l.residual(e2)
 	}).Sort(e)
 	return l.residual(e[len(e)/2])
 }
 
-func (l LeastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
+func (l leastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
 	for _, ex := range e {
 		prediction := l.evaluator.evaluate(ex.Features)
 		if ex.GetLabel()-prediction > 0 {
@@ -107,7 +109,7 @@ func (l LeastAbsoluteDeviationLoss) UpdateWeightedLabels(e Examples) {
 	}
 }
 
-type HuberLoss struct {
+type huberLoss struct {
 	huberAlpha float64
 	evaluator  Evaluator
 
@@ -115,23 +117,23 @@ type HuberLoss struct {
 	lastDeltaM float64
 }
 
-func (h HuberLoss) GetPrior(e Examples) float64 {
-	By(func(e1, e2 *pb.Example) bool {
+func (h huberLoss) GetPrior(e Examples) float64 {
+	by(func(e1, e2 *pb.Example) bool {
 		return e1.GetLabel() < e2.GetLabel()
 	}).Sort(e)
 	return e[len(e)/2].GetLabel()
 }
 
-func (h HuberLoss) GetSampleImportance(ex *pb.Example) float64 {
+func (h huberLoss) GetSampleImportance(ex *pb.Example) float64 {
 	return 1.0
 }
 
-func (h HuberLoss) residual(ex *pb.Example) float64 {
+func (h huberLoss) residual(ex *pb.Example) float64 {
 	return ex.GetLabel() - h.evaluator.evaluate(ex.Features)
 }
 
-func (h HuberLoss) UpdateWeightedLabels(e Examples) {
-	By(func(e1, e2 *pb.Example) bool {
+func (h huberLoss) UpdateWeightedLabels(e Examples) {
+	by(func(e1, e2 *pb.Example) bool {
 		return h.residual(e1) < h.residual(e2)
 	}).Sort(e)
 	marginalExample := e[int64(float64(len(e))*h.huberAlpha)]
@@ -146,8 +148,8 @@ func (h HuberLoss) UpdateWeightedLabels(e Examples) {
 	}
 }
 
-func (h HuberLoss) GetLeafWeight(e Examples) float64 {
-	By(func(e1, e2 *pb.Example) bool {
+func (h huberLoss) GetLeafWeight(e Examples) float64 {
+	by(func(e1, e2 *pb.Example) bool {
 		return h.residual(e1) < h.residual(e2)
 	}).Sort(e)
 	medianResidual := h.residual(e[len(e)/2])
@@ -166,18 +168,20 @@ func (h HuberLoss) GetLeafWeight(e Examples) float64 {
 	return medianResidual + innerDistribution/float64(len(e))
 }
 
+// NewLossFunction returns an implementation of `LossFunction`
+// given the LossFunctionConfig
 func NewLossFunction(l *pb.LossFunctionConfig, evaluator Evaluator) LossFunction {
 	switch l.GetLossFunction() {
 	case pb.LossFunction_LOGIT:
-		return LogitLoss{
+		return logitLoss{
 			evaluator: evaluator,
 		}
 	case pb.LossFunction_LEAST_ABSOLUTE_DEVIATION:
-		return LeastAbsoluteDeviationLoss{
+		return leastAbsoluteDeviationLoss{
 			evaluator: evaluator,
 		}
 	case pb.LossFunction_HUBER:
-		return HuberLoss{
+		return huberLoss{
 			huberAlpha: l.GetHuberAlpha(),
 			evaluator:  evaluator,
 		}

@@ -1,27 +1,29 @@
 package decisiontrees
 
 import (
-	"errors"
 	"fmt"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"github.com/golang/glog"
 )
 
+// Evaluator implements the evaluator of a decision tree given
+// a feature vector
 type Evaluator interface {
 	evaluate(features []float64) float64
 }
 
+// EvaluatorFunc implements the Evaluator interface
 type EvaluatorFunc func(features []float64) float64
 
 func (f EvaluatorFunc) evaluate(features []float64) float64 {
 	return f(features)
 }
 
-type ForestEvaluator struct {
+type forestEvaluator struct {
 	forest *pb.Forest
 }
 
-type TreeEvaluator struct {
+type treeEvaluator struct {
 	tree *pb.TreeNode
 }
 
@@ -29,15 +31,15 @@ func isLeaf(node *pb.TreeNode) bool {
 	return node.LeafValue != nil
 }
 
-func (f *ForestEvaluator) evaluate(features []float64) float64 {
+func (f *forestEvaluator) evaluate(features []float64) float64 {
 	sum := 0.0
 	for _, t := range f.forest.GetTrees() {
-		sum += (&TreeEvaluator{t}).evaluate(features)
+		sum += (&treeEvaluator{t}).evaluate(features)
 	}
 	return sum
 }
 
-func (t *TreeEvaluator) evaluate(features []float64) float64 {
+func (t *treeEvaluator) evaluate(features []float64) float64 {
 	node := t.tree
 	for !isLeaf(node) {
 		if features[node.GetFeature()] < node.GetSplitValue() {
@@ -49,7 +51,7 @@ func (t *TreeEvaluator) evaluate(features []float64) float64 {
 	return node.GetLeafValue()
 }
 
-const leafFeatureId = -1
+const leafFeatureID = -1
 
 type flatNode struct {
 	value     float64
@@ -57,21 +59,21 @@ type flatNode struct {
 	leftChild int
 }
 
-type FastTreeEvaluator struct {
+type fastTreeEvaluator struct {
 	nodes []flatNode
 }
 
 func validateTree(t *pb.TreeNode) error {
 	if isLeaf(t) {
 		if t.GetLeft() != nil || t.GetRight() != nil {
-			return errors.New(fmt.Sprintf("Leaf has non-zero children: %v", t))
+			return fmt.Errorf("leaf has non-zero children: %v", t)
 		}
 		return nil
 	}
 
 	// not a leaf - must have both children
 	if t.GetLeft() == nil || t.GetRight() == nil {
-		return errors.New(fmt.Sprintf("Branch has nil children: %v", t.String()))
+		return fmt.Errorf("branch has nil children: %v", t.String())
 	}
 
 	err := validateTree(t.GetLeft())
@@ -86,10 +88,10 @@ func validateTree(t *pb.TreeNode) error {
 	return nil
 }
 
-func (f *FastTreeEvaluator) evaluate(features []float64) float64 {
+func (f *fastTreeEvaluator) evaluate(features []float64) float64 {
 	glog.Info("Evaluating fast tree")
 	node := f.nodes[0]
-	for node.feature != leafFeatureId {
+	for node.feature != leafFeatureID {
 		glog.Info("Looping inside fast tree")
 		if features[node.feature] < node.value {
 			node = f.nodes[node.leftChild]
@@ -101,12 +103,12 @@ func (f *FastTreeEvaluator) evaluate(features []float64) float64 {
 	return node.value
 }
 
-func flattenTree(f *FastTreeEvaluator, current *pb.TreeNode, currentIndex int) {
+func flattenTree(f *fastTreeEvaluator, current *pb.TreeNode, currentIndex int) {
 	glog.Infof("Flattening tree at index %v", currentIndex)
 	if isLeaf(current) {
 		f.nodes[currentIndex] = flatNode{
 			value:   current.GetLeafValue(),
-			feature: leafFeatureId,
+			feature: leafFeatureID,
 		}
 		return
 	}
@@ -126,24 +128,24 @@ func flattenTree(f *FastTreeEvaluator, current *pb.TreeNode, currentIndex int) {
 	flattenTree(f, current.GetRight(), leftChild+1)
 }
 
-func NewFastTreeEvaluator(t *pb.TreeNode) (Evaluator, error) {
+func newFastTreeEvaluator(t *pb.TreeNode) (Evaluator, error) {
 	err := validateTree(t)
 	if err != nil {
 		return nil, err
 	}
 
-	f := &FastTreeEvaluator{
+	f := &fastTreeEvaluator{
 		nodes: make([]flatNode, 1),
 	}
 	flattenTree(f, t, 0)
 	return f, nil
 }
 
-type FastForestEvaluator struct {
+type fastForestEvaluator struct {
 	trees []Evaluator
 }
 
-func (f *FastForestEvaluator) evaluate(features []float64) float64 {
+func (f *fastForestEvaluator) evaluate(features []float64) float64 {
 	sum := 0.0
 	for _, t := range f.trees {
 		sum += t.evaluate(features)
@@ -151,13 +153,15 @@ func (f *FastForestEvaluator) evaluate(features []float64) float64 {
 	return sum
 }
 
+// NewFastForestEvaluator returns a flattened tree representation
+// used for efficient evaluation
 func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
-	e := &FastForestEvaluator{
+	e := &fastForestEvaluator{
 		trees: make([]Evaluator, 0, len(f.GetTrees())),
 	}
 
 	for _, t := range f.GetTrees() {
-		evaluator, err := NewFastTreeEvaluator(t)
+		evaluator, err := newFastTreeEvaluator(t)
 		if err != nil {
 			return nil, err
 		}

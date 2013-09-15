@@ -14,7 +14,7 @@ type boostingTreeGenerator struct {
 func (b *boostingTreeGenerator) doInfluenceTrimming(e Examples) Examples {
 	lossFunction := b.getLossFunction()
 
-	By(func(e1, e2 *pb.Example) bool {
+	by(func(e1, e2 *pb.Example) bool {
 		return lossFunction.GetSampleImportance(e1) < lossFunction.GetSampleImportance(e2)
 	}).Sort(e)
 
@@ -41,7 +41,7 @@ func (b *boostingTreeGenerator) updateExampleWeights(e Examples) {
 }
 
 func (b *boostingTreeGenerator) constructWeakLearner(e Examples) {
-	weakLearner := (&RegressionSplitter{
+	weakLearner := (&regressionSplitter{
 		lossFunction:         b.getLossFunction(),
 		splittingConstraints: b.forestConfig.GetSplittingConstraints(),
 		shrinkageConfig:      b.forestConfig.GetShrinkageConfig(),
@@ -96,6 +96,7 @@ func (b *boostingTreeGenerator) ConstructBoostingTree(e Examples) *pb.Forest {
 	return b.forest
 }
 
+// NewBoostingTreeGenerator returns a boosting tree given the forest config
 func NewBoostingTreeGenerator(forestConfig *pb.ForestConfig) *boostingTreeGenerator {
 	return &boostingTreeGenerator{
 		forestConfig: forestConfig,

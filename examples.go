@@ -7,6 +7,7 @@ import (
 	"sort"
 )
 
+// Examples is a slice of Example elements
 type Examples []*pb.Example
 
 func (e Examples) subsampleExamples(samplingRate float64) Examples {
@@ -20,7 +21,7 @@ func (e Examples) subsampleExamples(samplingRate float64) Examples {
 
 func (e Examples) crossValidationSamples(folds int) []Examples {
 	crossValidatedSamples := make([]Examples, folds)
-	for i, _ := range crossValidatedSamples {
+	for i := range crossValidatedSamples {
 		crossValidatedSamples[i] = make([]*pb.Example, 0, len(e)/folds)
 	}
 
@@ -40,7 +41,7 @@ func (e Examples) crossValidationSamples(folds int) []Examples {
 func (e Examples) boostrapFeatures(size int) []int {
 	subsample := make([]int, size)
 	allFeatures := e.getFeatures()
-	for i, _ := range subsample {
+	for i := range subsample {
 		subsample[i] = allFeatures[i]
 	}
 
@@ -61,9 +62,9 @@ func (e Examples) String() string {
 	return fmt.Sprint(i...)
 }
 
-type By func(e1, e2 *pb.Example) bool
+type by func(e1, e2 *pb.Example) bool
 
-func (by By) Sort(examples Examples) {
+func (by by) Sort(examples Examples) {
 	es := &exampleSorter{
 		examples: examples,
 		by:       by, // The Sort method's receiver is the function (closure) that defines the sort order.
@@ -73,11 +74,11 @@ func (by By) Sort(examples Examples) {
 
 type exampleSorter struct {
 	examples Examples
-	by       By
+	by       by
 }
 
-func (s *exampleSorter) Len() int {
-	return len(s.examples)
+func (e *exampleSorter) Len() int {
+	return len(e.examples)
 }
 
 func (e *exampleSorter) Swap(i int, j int) {
@@ -98,7 +99,7 @@ func (e Examples) getFeatures() []int {
 		}
 	}
 	res := make([]int, 0, len(vals))
-	for k, _ := range vals {
+	for k := range vals {
 		res = append(res, k)
 	}
 	return res

@@ -37,13 +37,13 @@ func (l *lossState) removeExample(e *pb.Example) {
 	l.sumSquaredDivergence -= delta * newDelta
 }
 
-type RegressionSplitter struct {
+type regressionSplitter struct {
 	lossFunction         LossFunction
 	splittingConstraints *pb.SplittingConstraints
 	shrinkageConfig      *pb.ShrinkageConfig
 }
 
-func (c *RegressionSplitter) shouldSplit(
+func (c *regressionSplitter) shouldSplit(
 	examples Examples,
 	bestSplit split,
 	currentLevel int64) bool {
@@ -87,7 +87,7 @@ func getBestSplit(examples Examples, feature int) split {
 		glog.Fatal("Failed copying all examples for sorting")
 	}
 
-	By(func(e1, e2 *pb.Example) bool {
+	by(func(e1, e2 *pb.Example) bool {
 		return e1.Features[feature] < e2.Features[feature]
 	}).Sort(Examples(examplesCopy))
 
@@ -124,7 +124,7 @@ func getBestSplit(examples Examples, feature int) split {
 	return bestSplit
 }
 
-func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64) *pb.TreeNode {
+func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64) *pb.TreeNode {
 	glog.Infof("Generating tree at level %v with %v examples", currentLevel, len(examples))
 	glog.V(2).Infof("Generating with examples %+v", currentLevel, examples)
 
@@ -137,7 +137,7 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 	}
 
 	bestSplit := split{}
-	for _, _ = range features {
+	for _ = range features {
 		candidateSplit := <-candidateSplits
 		if candidateSplit.gain > bestSplit.gain {
 			bestSplit = candidateSplit
@@ -146,7 +146,7 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 
 	if c.shouldSplit(examples, bestSplit, currentLevel) {
 		glog.Infof("Splitting at level %v with split %v", currentLevel, bestSplit)
-		By(func(e1, e2 *pb.Example) bool {
+		by(func(e1, e2 *pb.Example) bool {
 			return e1.Features[bestSplit.feature] < e2.Features[bestSplit.feature]
 		}).Sort(examples)
 
@@ -188,6 +188,7 @@ func (c *RegressionSplitter) generateTree(examples Examples, currentLevel int64)
 	}
 }
 
-func (c *RegressionSplitter) GenerateTree(examples Examples) *pb.TreeNode {
+// GenerateTree generates a regression tree on the examples given
+func (c *regressionSplitter) GenerateTree(examples Examples) *pb.TreeNode {
 	return c.generateTree(examples, 0)
 }
