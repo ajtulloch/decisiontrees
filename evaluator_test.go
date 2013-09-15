@@ -18,12 +18,17 @@ func makeTree(level int, numFeatures int) *pb.TreeNode {
 	}
 	splittingFeature := rand.Int63n(int64(numFeatures))
 	splittingValue := rand.Float64()
-	return &pb.TreeNode{
+	t := &pb.TreeNode{
 		Feature:    proto.Int64(splittingFeature),
 		SplitValue: proto.Float64(splittingValue),
 		Left:       makeTree(level-1, numFeatures),
 		Right:      makeTree(level-1, numFeatures),
 	}
+	err := validateTree(t)
+	if err != nil {
+		glog.Fatal("Invalid tree: ", err)
+	}
+	return t
 }
 
 func makeForest(numTrees int, numLevels int, numFeatures int) *pb.Forest {
@@ -82,17 +87,18 @@ func benchEvaluator(f func(*pb.Forest) Evaluator, b *testing.B) {
 	forest := makeForest(*numTrees, *numLevels, *numFeatures)
 	evaluator := f(forest)
 
+	numFeatureVectors := 100
+
 	glog.Info("Constructing features")
-	featureVectors := make([][]float64, 0, b.N)
-	for i := 0; i < b.N; i++ {
+	featureVectors := make([][]float64, 0, numFeatureVectors)
+	for i := 0; i < numFeatureVectors; i++ {
 		featureVectors = append(featureVectors, randomFeatureVector(*numFeatures))
 	}
 	glog.Info("Finished constructing features")
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		glog.Info("Evaluating example")
-		evaluator.Evaluate(featureVectors[i])
+		evaluator.Evaluate(featureVectors[i%numFeatureVectors])
 	}
 }
 
@@ -102,7 +108,6 @@ func BenchmarkFastTreeEvaluation(b *testing.B) {
 		evaluator, err := NewFastForestEvaluator(forest)
 		if err != nil {
 			glog.Fatal(err)
-			panic("")
 		}
 		return evaluator
 	}

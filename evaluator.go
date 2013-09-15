@@ -15,6 +15,7 @@ type Evaluator interface {
 // EvaluatorFunc implements the Evaluator interface
 type EvaluatorFunc func(features []float64) float64
 
+// Evaluate is the implementation of Evaluator interface
 func (f EvaluatorFunc) Evaluate(features []float64) float64 {
 	return f(features)
 }
@@ -89,17 +90,14 @@ func validateTree(t *pb.TreeNode) error {
 }
 
 func (f *fastTreeEvaluator) Evaluate(features []float64) float64 {
-	glog.Info("Evaluating fast tree")
 	node := f.nodes[0]
 	for node.feature != leafFeatureID {
-		glog.Info("Looping inside fast tree")
 		if features[node.feature] < node.value {
 			node = f.nodes[node.leftChild]
 		} else {
 			node = f.nodes[node.leftChild+1]
 		}
 	}
-	glog.Info("Finished fast tree")
 	return node.value
 }
 
