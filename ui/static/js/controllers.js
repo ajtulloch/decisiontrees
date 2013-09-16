@@ -1,18 +1,11 @@
 'use strict';
 
 /* Controllers */
-
-function DecisionTreeListCtrl($scope, $http) {
-  $http.get('/api/decisiontrees/').success(function(data) {
-    $scope.trainingRows = data
-  });
+function DecisionTreeListCtrl($scope, DecisionTree) {
+  $scope.trainingRows = DecisionTree.query()
 }
 
 //PhoneListCtrl.$inject = ['$scope', '$http'];
-function DecisionTreeLDetailCtrl($scope, $routeParams, $http) {
-  $scope.taskId = $routeParams.taskId
-  $http.get('/api/decisiontrees/' + $scope.taskId).
-    success(function(data) {
-      $scope.trainingRow = data
-    });
+function DecisionTreeDetailCtrl($scope, $routeParams, DecisionTree) {
+  $scope.trainingRow = DecisionTree.get({taskId: $routeParams.taskId})
 }
