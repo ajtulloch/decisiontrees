@@ -10,9 +10,9 @@
           <th>Task ID</th>
           <th>Number of Weak Learners</th>
         </td>
-        <tr ng-repeat="tree in trees">
-          <td><a href="#/decisiontrees/{{tree._id}}">{{tree._id}}</a></td>
-          <td>{{tree.forestConfig.numWeakLearners}}</td>
+        <tr ng-repeat="trainingRow in trainingRows">
+          <td><a href="#/decisiontrees/{{trainingRow._id}}">{{trainingRow._id}}</a></td>
+          <td>{{trainingRow.forestConfig.numWeakLearners}}</td>
         </tr>
       </table>
     </div>

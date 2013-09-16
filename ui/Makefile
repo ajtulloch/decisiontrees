@@ -2,6 +2,8 @@ all: test
 
 test:
 	python test/test.py
+	./static/scripts/e2e-test.sh
+	./static/scripts/test.sh
 
 run:
 	python run.py
