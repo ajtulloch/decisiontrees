@@ -244,11 +244,12 @@ type TreeNode struct {
 	// feature to split on
 	Feature *int64 `protobuf:"varint,1,opt,name=feature" json:"feature,omitempty" bson:"feature,omitempty"`
 	// value to split on
-	SplitValue       *float64  `protobuf:"fixed64,2,opt,name=splitValue" json:"splitValue,omitempty" bson:"splitValue,omitempty"`
-	Left             *TreeNode `protobuf:"bytes,3,opt,name=left" json:"left,omitempty" bson:"left,omitempty"`
-	Right            *TreeNode `protobuf:"bytes,4,opt,name=right" json:"right,omitempty" bson:"right,omitempty"`
-	LeafValue        *float64  `protobuf:"fixed64,5,opt,name=leafValue" json:"leafValue,omitempty" bson:"leafValue,omitempty"`
-	XXX_unrecognized []byte    `json:"-" bson:"-"`
+	SplitValue       *float64    `protobuf:"fixed64,2,opt,name=splitValue" json:"splitValue,omitempty" bson:"splitValue,omitempty"`
+	Left             *TreeNode   `protobuf:"bytes,3,opt,name=left" json:"left,omitempty" bson:"left,omitempty"`
+	Right            *TreeNode   `protobuf:"bytes,4,opt,name=right" json:"right,omitempty" bson:"right,omitempty"`
+	LeafValue        *float64    `protobuf:"fixed64,5,opt,name=leafValue" json:"leafValue,omitempty" bson:"leafValue,omitempty"`
+	Annotation       *Annotation `protobuf:"bytes,6,opt,name=annotation" json:"annotation,omitempty" bson:"annotation,omitempty"`
+	XXX_unrecognized []byte      `json:"-" bson:"-"`
 }
 
 func (m *TreeNode) Reset()         { *m = TreeNode{} }
@@ -286,6 +287,37 @@ func (m *TreeNode) GetRight() *TreeNode {
 func (m *TreeNode) GetLeafValue() float64 {
 	if m != nil && m.LeafValue != nil {
 		return *m.LeafValue
+	}
+	return 0
+}
+
+func (m *TreeNode) GetAnnotation() *Annotation {
+	if m != nil {
+		return m.Annotation
+	}
+	return nil
+}
+
+type Annotation struct {
+	NumExamples      *int64   `protobuf:"varint,1,opt,name=numExamples" json:"numExamples,omitempty" bson:"numExamples,omitempty"`
+	AverageGain      *float64 `protobuf:"fixed64,2,opt,name=averageGain" json:"averageGain,omitempty" bson:"averageGain,omitempty"`
+	XXX_unrecognized []byte   `json:"-" bson:"-"`
+}
+
+func (m *Annotation) Reset()         { *m = Annotation{} }
+func (m *Annotation) String() string { return proto.CompactTextString(m) }
+func (*Annotation) ProtoMessage()    {}
+
+func (m *Annotation) GetNumExamples() int64 {
+	if m != nil && m.NumExamples != nil {
+		return *m.NumExamples
+	}
+	return 0
+}
+
+func (m *Annotation) GetAverageGain() float64 {
+	if m != nil && m.AverageGain != nil {
+		return *m.AverageGain
 	}
 	return 0
 }

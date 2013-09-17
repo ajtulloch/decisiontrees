@@ -155,6 +155,10 @@ func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64)
 		tree := &pb.TreeNode{
 			Feature:    proto.Int64(int64(bestSplit.feature)),
 			SplitValue: proto.Float64(bestValue),
+			Annotation: &pb.Annotation{
+				NumExamples: proto.Int64(int64(len(examples))),
+				AverageGain: proto.Float64(bestSplit.gain / float64(len(examples))),
+			},
 		}
 
 		// Recur down the left and right branches in parallel
@@ -185,6 +189,9 @@ func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64)
 	glog.Infof("Leaf weight: %v, shrinkage: %v", leafWeight, shrinkage)
 	return &pb.TreeNode{
 		LeafValue: proto.Float64(leafWeight * shrinkage),
+		Annotation: &pb.Annotation{
+			NumExamples: proto.Int64(int64(len(examples))),
+		},
 	}
 }
 

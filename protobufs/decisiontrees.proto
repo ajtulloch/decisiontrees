@@ -32,6 +32,13 @@ message TreeNode {
   optional TreeNode right = 4;
 
   optional double leafValue = 5;
+
+  optional Annotation annotation = 6; 
+}
+
+message Annotation {
+  optional int64 numExamples = 1;
+  optional double averageGain = 2;
 }
 
 message Forest {
