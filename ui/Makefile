@@ -14,5 +14,8 @@ fake:
 clean: 
 	find . -iname *.pyc | xargs rm
 
+lint:
+	flake8 . --exclude=env,protobufs,shell.py
+
 .PHONY: test
 
