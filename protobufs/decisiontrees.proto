@@ -112,9 +112,21 @@ message DataSourceConfig {
   optional GridFsConfig gridFsConfig = 2;
 }
 
+message EpochResult {
+  optional double roc = 1;
+  optional double logScore = 2;
+  optional double normalizedEntropy = 3;
+  optional double calibration = 4;
+}
+
+message TrainingResults {
+  repeated EpochResult epochResults = 1;
+}
+
 message TrainingRow {
   optional ForestConfig forestConfig = 1;
   optional Forest forest = 2;
   optional DataSourceConfig dataSourceConfig = 3;
   optional TrainingStatus trainingStatus = 4;
+  optional TrainingResults trainingResults = 5;
 }

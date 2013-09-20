@@ -597,11 +597,68 @@ func (m *DataSourceConfig) GetGridFsConfig() *GridFsConfig {
 	return nil
 }
 
+type EpochResult struct {
+	Roc               *float64 `protobuf:"fixed64,1,opt,name=roc" json:"roc,omitempty" bson:"roc,omitempty"`
+	LogScore          *float64 `protobuf:"fixed64,2,opt,name=logScore" json:"logScore,omitempty" bson:"logScore,omitempty"`
+	NormalizedEntropy *float64 `protobuf:"fixed64,3,opt,name=normalizedEntropy" json:"normalizedEntropy,omitempty" bson:"normalizedEntropy,omitempty"`
+	Calibration       *float64 `protobuf:"fixed64,4,opt,name=calibration" json:"calibration,omitempty" bson:"calibration,omitempty"`
+	XXX_unrecognized  []byte   `json:"-" bson:"-"`
+}
+
+func (m *EpochResult) Reset()         { *m = EpochResult{} }
+func (m *EpochResult) String() string { return proto.CompactTextString(m) }
+func (*EpochResult) ProtoMessage()    {}
+
+func (m *EpochResult) GetRoc() float64 {
+	if m != nil && m.Roc != nil {
+		return *m.Roc
+	}
+	return 0
+}
+
+func (m *EpochResult) GetLogScore() float64 {
+	if m != nil && m.LogScore != nil {
+		return *m.LogScore
+	}
+	return 0
+}
+
+func (m *EpochResult) GetNormalizedEntropy() float64 {
+	if m != nil && m.NormalizedEntropy != nil {
+		return *m.NormalizedEntropy
+	}
+	return 0
+}
+
+func (m *EpochResult) GetCalibration() float64 {
+	if m != nil && m.Calibration != nil {
+		return *m.Calibration
+	}
+	return 0
+}
+
+type TrainingResults struct {
+	EpochResults     []*EpochResult `protobuf:"bytes,1,rep,name=epochResults" json:"epochResults,omitempty" bson:"epochResults,omitempty"`
+	XXX_unrecognized []byte         `json:"-" bson:"-"`
+}
+
+func (m *TrainingResults) Reset()         { *m = TrainingResults{} }
+func (m *TrainingResults) String() string { return proto.CompactTextString(m) }
+func (*TrainingResults) ProtoMessage()    {}
+
+func (m *TrainingResults) GetEpochResults() []*EpochResult {
+	if m != nil {
+		return m.EpochResults
+	}
+	return nil
+}
+
 type TrainingRow struct {
 	ForestConfig     *ForestConfig     `protobuf:"bytes,1,opt,name=forestConfig" json:"forestConfig,omitempty" bson:"forestConfig,omitempty"`
 	Forest           *Forest           `protobuf:"bytes,2,opt,name=forest" json:"forest,omitempty" bson:"forest,omitempty"`
 	DataSourceConfig *DataSourceConfig `protobuf:"bytes,3,opt,name=dataSourceConfig" json:"dataSourceConfig,omitempty" bson:"dataSourceConfig,omitempty"`
 	TrainingStatus   *TrainingStatus   `protobuf:"varint,4,opt,name=trainingStatus,enum=protobufs.TrainingStatus" json:"trainingStatus,omitempty" bson:"trainingStatus,omitempty"`
+	TrainingResults  *TrainingResults  `protobuf:"bytes,5,opt,name=trainingResults" json:"trainingResults,omitempty" bson:"trainingResults,omitempty"`
 	XXX_unrecognized []byte            `json:"-" bson:"-"`
 }
 
@@ -635,6 +692,13 @@ func (m *TrainingRow) GetTrainingStatus() TrainingStatus {
 		return *m.TrainingStatus
 	}
 	return 0
+}
+
+func (m *TrainingRow) GetTrainingResults() *TrainingResults {
+	if m != nil {
+		return m.TrainingResults
+	}
+	return nil
 }
 
 func init() {
