@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/goprotobuf/proto"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"github.com/golang/glog"
+	"time"
 )
 
 type boostingTreeGenerator struct {
@@ -51,6 +52,11 @@ func (b *boostingTreeGenerator) constructWeakLearner(e Examples) {
 }
 
 func (b *boostingTreeGenerator) doBoostingRound(e Examples, round int) {
+	startTime := time.Now()
+	defer func() {
+		glog.Infof("Round %v, duration %v", round, time.Now().Sub(startTime))
+	}()
+
 	if b.forestConfig.GetStochasticityConfig() != nil {
 		e = e.subsampleExamples(b.forestConfig.GetStochasticityConfig().GetPerRoundSamplingRate())
 	}
@@ -63,13 +69,24 @@ func (b *boostingTreeGenerator) doBoostingRound(e Examples, round int) {
 
 	b.updateExampleWeights(e)
 	b.constructWeakLearner(e)
+
+	metrics := b.computeTrainingMetrics(e)
+	glog.Infof("Epoch: %v, Metrics: %+v", round, metrics)
+}
+
+func (b *boostingTreeGenerator) computeTrainingMetrics(e Examples) pb.EpochResult {
+	evaluator, err := NewFastForestEvaluator(b.forest)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	return computeEpochResult(evaluator, e)
 }
 
 func (b *boostingTreeGenerator) getLossFunction() LossFunction {
 	evaluator, err := NewFastForestEvaluator(b.forest)
 	if err != nil {
 		glog.Fatal(err)
-		panic("")
 	}
 
 	return NewLossFunction(b.forestConfig.GetLossFunctionConfig(), evaluator)

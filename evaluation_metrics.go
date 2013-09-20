@@ -1,7 +1,10 @@
 package decisiontrees
 
 import (
+	"code.google.com/p/goprotobuf/proto"
 	"fmt"
+	pb "github.com/ajtulloch/decisiontrees/protobufs"
+	"github.com/golang/glog"
 	"math"
 	"sort"
 )
@@ -91,4 +94,50 @@ func (l labelledPredictions) NormalizedEntropy() float64 {
 	}
 	p := float64(numPositives) / float64(l.Len())
 	return l.LogScore() / (p*math.Log2(p) + (1-p)*math.Log2(1-p))
+}
+
+func computeEpochResult(e Evaluator, examples Examples) pb.EpochResult {
+	l := make([]labelledPrediction, 0, len(examples))
+
+	boolLabel := func(example *pb.Example) bool {
+		if example.GetLabel() > 0 {
+			return true
+		}
+		return false
+	}
+
+	for _, ex := range examples {
+		l = append(l, labelledPrediction{
+			Label:      boolLabel(ex),
+			Prediction: e.Evaluate(ex.GetFeatures()),
+		})
+	}
+
+	lp := labelledPredictions(l)
+	return pb.EpochResult{
+		Roc:               proto.Float64(lp.ROC()),
+		LogScore:          proto.Float64(lp.LogScore()),
+		NormalizedEntropy: proto.Float64(lp.NormalizedEntropy()),
+		Calibration:       proto.Float64(lp.Calibration()),
+	}
+}
+
+// LearningCurve computes the progressive learning curve after each epoch on the
+// given examples
+func LearningCurve(f *pb.Forest, e Examples) *pb.TrainingResults {
+	tr := &pb.TrainingResults{
+		EpochResults: make([]*pb.EpochResult, 0, len(f.GetTrees())),
+	}
+
+	for i := range f.GetTrees() {
+		evaluator, err := NewFastForestEvaluator(&pb.Forest{
+			Trees: f.GetTrees()[:i],
+		})
+		if err != nil {
+			glog.Fatal(err)
+		}
+		er := computeEpochResult(evaluator, e)
+		tr.EpochResults = append(tr.EpochResults, &er)
+	}
+	return tr
 }

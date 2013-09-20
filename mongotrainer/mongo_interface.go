@@ -74,19 +74,21 @@ func (m *MongoTrainer) Loop() {
 	}
 }
 
-func (m *MongoTrainer) runTraining(task *trainingTask) (*pb.Forest, error) {
+func (m *MongoTrainer) runTraining(task *trainingTask) error {
 	dataSource, err := NewDataSource(task.row.GetDataSourceConfig(), m.Collection.Database.Session)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	trainingData, err := dataSource.GetTrainingData()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// TODO(tulloch) - more generic factory (e.g. LambdaMART, RF, Boosting)
 	generator := dt.NewBoostingTreeGenerator(task.row.GetForestConfig())
-	return generator.ConstructBoostingTree(trainingData.GetTrain()), nil
+	task.row.Forest = generator.ConstructBoostingTree(trainingData.GetTrain())
+	task.row.TrainingResults = dt.LearningCurve(task.row.Forest, trainingData.GetTest())
+	return nil
 }
 
 func (m *MongoTrainer) claimTask(task *trainingTask) error {
@@ -99,12 +101,12 @@ func (m *MongoTrainer) runTask(task *trainingTask) error {
 		return err
 	}
 
-	forest, err := m.runTraining(task)
+	err = m.runTraining(task)
 	if err != nil {
 		return err
 	}
 
-	m.finalizeTask(task, forest)
+	err = m.finalizeTask(task)
 	if err != nil {
 		return err
 	}
@@ -132,18 +134,20 @@ func (m *MongoTrainer) cas(objectID bson.ObjectId, from, to pb.TrainingStatus) e
 	if changeInfo.Updated != 1 {
 		return fmt.Errorf("failed CAS'ing task %v from state %v to state %v", objectID, from, to)
 	}
+
 	glog.Infof("Updated objectId %v from state %v to state %v", objectID, from, to)
 	return nil
 }
 
-func (m *MongoTrainer) finalizeTask(task *trainingTask, forest *pb.Forest) error {
+func (m *MongoTrainer) finalizeTask(task *trainingTask) error {
 	err := m.cas(task.objectID, pb.TrainingStatus_PROCESSING, pb.TrainingStatus_FINISHED)
 	if err != nil {
 		return err
 	}
 	return m.Collection.UpdateId(task.objectID, bson.M{
 		"$set": bson.M{
-			"forest": forest,
+			"forest":          task.row.Forest,
+			"trainingResults": task.row.TrainingResults,
 		},
 	})
 }
