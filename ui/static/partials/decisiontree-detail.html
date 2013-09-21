@@ -1,7 +1,15 @@
-<h1>Ensemble with {{trainingRow.forestConfig.length}} weak learners</h1>
-
-<h2>Training Configuration</h2>
-<pre>{{ trainingRow.forestConfig | json }}</pre>
+<nvd3-line-chart 
+  data="epochResults" 
+  id="epochResults" 
+  width="800" 
+  height="400" 
+  showXAxis="true" 
+  showLegend="true"
+  interactive="true"
+  tooltips="true"
+  showYAxis="true">
+  <svg></svg>
+</nvd3-line-chart>
  
 <table class="table table-bordered">
   <tbody>

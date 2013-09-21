@@ -1,7 +1,7 @@
 'use strict';
 
 /* App Module */
-angular.module('decisiontrees', ['decisiontreeDirectives', 'decisionTreeServices']).
+angular.module('decisiontrees', ['decisiontreeDirectives', 'decisionTreeServices', 'nvd3ChartDirectives']).
   config(['$routeProvider', function($routeProvider) {
   $routeProvider.
     when('/decisiontrees', {templateUrl: 'static/partials/decisiontree-list.html',   controller: DecisionTreeListCtrl}).

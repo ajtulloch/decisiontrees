@@ -1,20 +1,15 @@
-<h1>Decision Tree Training Monitor</h1>
-<div class="container-narrow">
-  <div class="row-fluid">
-    <div class="span2">
-    </div>
-    <div class="span4">
-      <!--Body content-->
-      <table class="table">
-        <tr>
-          <th>Task ID</th>
-          <th>Number of Weak Learners</th>
-        </td>
-        <tr ng-repeat="trainingRow in trainingRows">
-          <td><a href="#/decisiontrees/{{trainingRow._id}}">{{trainingRow._id}}</a></td>
-          <td>{{trainingRow.forestConfig.numWeakLearners}}</td>
-        </tr>
-      </table>
-    </div>
+<div class="row-fluid">
+  <div class="span4">
+    <!--Body content-->
+    <table class="table">
+      <tr>
+        <th>Task ID</th>
+        <th>Number of Weak Learners</th>
+     </td>
+      <tr ng-repeat="trainingRow in trainingRows">
+        <td><a href="#/decisiontrees/{{trainingRow._id}}">{{trainingRow._id}}</a></td>
+        <td>{{trainingRow.forestConfig.numWeakLearners}}</td>
+      </tr>
+    </table>
   </div>
 </div>

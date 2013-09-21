@@ -1,0 +1,43 @@
+{
+  "name": "angularjs-nvd3-directives",
+  "version": "0.0.0",
+  "description": "Angular.js directives for nvd3",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cmaurer/angularjs-nvd3-directives.git"
+  },
+  "keywords": [
+    "angular.js",
+    "nvd3.js",
+    "d3.js",
+    "directives"
+  ],
+  "author": {
+    "name": "Christian Maurer"
+  },
+  "license": "Apache",
+  "readmeFilename": "README.md",
+  "gitHead": "82273b2c5a38c9e5841e767da4f3252ba31927e8",
+  "bugs": {
+    "url": "https://github.com/cmaurer/angularjs-nvd3-directives/issues"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-jshint": "~0.6.2",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-cli": "~0.1.9",
+    "grunt-bower-task": "~0.3.2",
+    "grunt-contrib-copy": "~0.4.1"
+  }
+}

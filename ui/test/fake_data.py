@@ -42,6 +42,20 @@ def fake_forest(height, num_trees):
     )
 
 
+def fake_results(num_trees):
+    def generator(start, end, variance):
+        uniform = lambda: 2 * random.random() - 1
+        return lambda i: \
+            start + (end - start) * i / num_trees + uniform() * variance
+    return pb.TrainingResults(epochResults=[
+        pb.EpochResult(
+            roc=generator(0.2, 0.9, 0.02)(i),
+            calibration=generator(1.0, 1.0, 0.02)(i),
+            normalizedEntropy=generator(0.9, 0.75, 0.01)(i)
+        ) for i in range(num_trees)
+    ])
+
+
 def insert_random_forest(height, num_trees):
     serialize = lambda pb: protobuf_to_dict(pb)
     with app.app_context():
@@ -49,6 +63,7 @@ def insert_random_forest(height, num_trees):
             serialize(pb.TrainingRow(
                 forestConfig=fake_config(num_trees),
                 forest=fake_forest(height, num_trees),
+                trainingResults=fake_results(num_trees),
             ))
         )
 
