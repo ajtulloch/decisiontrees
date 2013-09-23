@@ -72,9 +72,15 @@ func TestBestSplit(t *testing.T) {
 func TestRegressionSplitter(t *testing.T) {
 	examples := constructSmallExamples(5, 5)
 	rs := &regressionSplitter{
-		lossFunction: logitLoss{
-			evaluator: EvaluatorFunc(func(features []float64) float64 { return 0.5 }),
+		leafWeight: func(e Examples) float64 {
+			l := logitLoss{
+				evaluator: EvaluatorFunc(func(features []float64) float64 {
+					return 0.5
+				}),
+			}
+			return l.GetLeafWeight(e)
 		},
+		featureSelector: naiveFeatureSelector{},
 		splittingConstraints: &pb.SplittingConstraints{
 			MaximumLevels: proto.Int64(3),
 		},
@@ -119,16 +125,20 @@ func BenchmarkRegressionSplitter(b *testing.B) {
 		LossFunctionConfig: &pb.LossFunctionConfig{
 			LossFunction: pb.LossFunction_LOGIT.Enum(),
 		},
+		Algorithm: pb.Algorithm_BOOSTING.Enum(),
 	}
 
 	glog.Info(forestConfig.String())
 
-	generator := NewBoostingTreeGenerator(forestConfig)
+	generator, err := NewForestGenerator(forestConfig)
+	if err != nil {
+		glog.Fatal(err)
+	}
 	examples := constructBenchmarkExamples(b.N, *numFeatures, 0)
 	glog.Infof("Starting with %v examples", len(examples))
 
 	b.ResetTimer()
-	forest := generator.ConstructBoostingTree(examples)
+	forest := generator.ConstructForest(examples)
 	res, err := json.MarshalIndent(forest, "", "  ")
 	if err != nil {
 		glog.Fatalf("Error: %v", err)

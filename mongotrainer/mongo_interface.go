@@ -84,9 +84,11 @@ func (m *MongoTrainer) runTraining(task *trainingTask) error {
 		return err
 	}
 
-	// TODO(tulloch) - more generic factory (e.g. LambdaMART, RF, Boosting)
-	generator := dt.NewBoostingTreeGenerator(task.row.GetForestConfig())
-	task.row.Forest = generator.ConstructBoostingTree(trainingData.GetTrain())
+	generator, err := dt.NewForestGenerator(task.row.GetForestConfig())
+	if err != nil {
+		return err
+	}
+	task.row.Forest = generator.ConstructForest(trainingData.GetTrain())
 	task.row.TrainingResults = dt.LearningCurve(task.row.Forest, trainingData.GetTest())
 	return nil
 }

@@ -49,7 +49,6 @@ message SplittingConstraints {
   optional int64 maximumLevels = 1;
   optional double minimumAverageGain = 2;
   optional int64 minimumSamplesAtLeaf = 3;
-  optional double featuresConsideredFraction = 4;
 }
 
 message PruningConstraints {
@@ -72,7 +71,16 @@ message ShrinkageConfig {
 
 message StochasticityConfig {
   // Take a random sample of training data per round
+  // Used in stochastic gradient boosting
   optional double perRoundSamplingRate = 1;
+
+  // Proportion of examples to draw boostrap sample from
+  // Used in random forests
+  optional double exampleBoostrapProportion = 2;
+
+  // Number of features to examine at each splitting step
+  // Used in random forests
+  optional int64 featureSampleSize = 3;
 }
 
 enum Algorithm {

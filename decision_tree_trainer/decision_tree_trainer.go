@@ -43,8 +43,11 @@ func main() {
 	}
 	glog.Infof("Loaded forest config %+v", config)
 
-	generator := dt.NewBoostingTreeGenerator(config)
-	forest := generator.ConstructBoostingTree(trainData.GetTrain())
+	generator, err := dt.NewForestGenerator(config)
+	if err != nil {
+		glog.Fatal(err)
+	}
+	forest := generator.ConstructForest(trainData.GetTrain())
 	learningCurve := dt.LearningCurve(forest, trainData.GetTest())
 
 	glog.Infof("Learning curve: %+v", learningCurve)

@@ -19,6 +19,15 @@ func (e Examples) subsampleExamples(samplingRate float64) Examples {
 	return e[:int64(float64(len(e))*samplingRate)]
 }
 
+func (e Examples) boostrapExamples(samplingRate float64) Examples {
+	sampleSize := int(samplingRate * float64(len(e)))
+	result := make([]*pb.Example, 0, sampleSize)
+	for i := 0; i < sampleSize; i++ {
+		result = append(result, e[rand.Intn(len(e))])
+	}
+	return result
+}
+
 func (e Examples) crossValidationSamples(folds int) []Examples {
 	crossValidatedSamples := make([]Examples, folds)
 	for i := range crossValidatedSamples {
@@ -36,22 +45,6 @@ func (e Examples) crossValidationSamples(folds int) []Examples {
 		crossValidatedSamples[fold] = append(crossValidatedSamples[fold], ex)
 	}
 	return crossValidatedSamples
-}
-
-func (e Examples) boostrapFeatures(size int) []int {
-	subsample := make([]int, size)
-	allFeatures := e.getFeatures()
-	for i := range subsample {
-		subsample[i] = allFeatures[i]
-	}
-
-	for i := size + 1; i < len(allFeatures); i++ {
-		j := int(rand.Int31n(int32(i)))
-		if j < size {
-			subsample[j] = allFeatures[i]
-		}
-	}
-	return subsample
 }
 
 func (e Examples) String() string {

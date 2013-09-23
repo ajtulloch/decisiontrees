@@ -339,11 +339,10 @@ func (m *Forest) GetTrees() []*TreeNode {
 }
 
 type SplittingConstraints struct {
-	MaximumLevels              *int64   `protobuf:"varint,1,opt,name=maximumLevels" json:"maximumLevels,omitempty" bson:"maximumLevels,omitempty"`
-	MinimumAverageGain         *float64 `protobuf:"fixed64,2,opt,name=minimumAverageGain" json:"minimumAverageGain,omitempty" bson:"minimumAverageGain,omitempty"`
-	MinimumSamplesAtLeaf       *int64   `protobuf:"varint,3,opt,name=minimumSamplesAtLeaf" json:"minimumSamplesAtLeaf,omitempty" bson:"minimumSamplesAtLeaf,omitempty"`
-	FeaturesConsideredFraction *float64 `protobuf:"fixed64,4,opt,name=featuresConsideredFraction" json:"featuresConsideredFraction,omitempty" bson:"featuresConsideredFraction,omitempty"`
-	XXX_unrecognized           []byte   `json:"-" bson:"-"`
+	MaximumLevels        *int64   `protobuf:"varint,1,opt,name=maximumLevels" json:"maximumLevels,omitempty" bson:"maximumLevels,omitempty"`
+	MinimumAverageGain   *float64 `protobuf:"fixed64,2,opt,name=minimumAverageGain" json:"minimumAverageGain,omitempty" bson:"minimumAverageGain,omitempty"`
+	MinimumSamplesAtLeaf *int64   `protobuf:"varint,3,opt,name=minimumSamplesAtLeaf" json:"minimumSamplesAtLeaf,omitempty" bson:"minimumSamplesAtLeaf,omitempty"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
 }
 
 func (m *SplittingConstraints) Reset()         { *m = SplittingConstraints{} }
@@ -367,13 +366,6 @@ func (m *SplittingConstraints) GetMinimumAverageGain() float64 {
 func (m *SplittingConstraints) GetMinimumSamplesAtLeaf() int64 {
 	if m != nil && m.MinimumSamplesAtLeaf != nil {
 		return *m.MinimumSamplesAtLeaf
-	}
-	return 0
-}
-
-func (m *SplittingConstraints) GetFeaturesConsideredFraction() float64 {
-	if m != nil && m.FeaturesConsideredFraction != nil {
-		return *m.FeaturesConsideredFraction
 	}
 	return 0
 }
@@ -460,8 +452,15 @@ func (m *ShrinkageConfig) GetShrinkage() float64 {
 
 type StochasticityConfig struct {
 	// Take a random sample of training data per round
+	// Used in stochastic gradient boosting
 	PerRoundSamplingRate *float64 `protobuf:"fixed64,1,opt,name=perRoundSamplingRate" json:"perRoundSamplingRate,omitempty" bson:"perRoundSamplingRate,omitempty"`
-	XXX_unrecognized     []byte   `json:"-" bson:"-"`
+	// Proportion of examples to draw boostrap sample from
+	// Used in random forests
+	ExampleBoostrapProportion *float64 `protobuf:"fixed64,2,opt,name=exampleBoostrapProportion" json:"exampleBoostrapProportion,omitempty" bson:"exampleBoostrapProportion,omitempty"`
+	// Number of features to examine at each splitting step
+	// Used in random forests
+	FeatureSampleSize *int64 `protobuf:"varint,3,opt,name=featureSampleSize" json:"featureSampleSize,omitempty" bson:"featureSampleSize,omitempty"`
+	XXX_unrecognized  []byte `json:"-" bson:"-"`
 }
 
 func (m *StochasticityConfig) Reset()         { *m = StochasticityConfig{} }
@@ -471,6 +470,20 @@ func (*StochasticityConfig) ProtoMessage()    {}
 func (m *StochasticityConfig) GetPerRoundSamplingRate() float64 {
 	if m != nil && m.PerRoundSamplingRate != nil {
 		return *m.PerRoundSamplingRate
+	}
+	return 0
+}
+
+func (m *StochasticityConfig) GetExampleBoostrapProportion() float64 {
+	if m != nil && m.ExampleBoostrapProportion != nil {
+		return *m.ExampleBoostrapProportion
+	}
+	return 0
+}
+
+func (m *StochasticityConfig) GetFeatureSampleSize() int64 {
+	if m != nil && m.FeatureSampleSize != nil {
+		return *m.FeatureSampleSize
 	}
 	return 0
 }

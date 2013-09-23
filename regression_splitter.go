@@ -38,7 +38,8 @@ func (l *lossState) removeExample(e *pb.Example) {
 }
 
 type regressionSplitter struct {
-	lossFunction         LossFunction
+	leafWeight           func(e Examples) float64
+	featureSelector      FeatureSelector
 	splittingConstraints *pb.SplittingConstraints
 	shrinkageConfig      *pb.ShrinkageConfig
 }
@@ -128,7 +129,7 @@ func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64)
 	glog.Infof("Generating tree at level %v with %v examples", currentLevel, len(examples))
 	glog.V(2).Infof("Generating with examples %+v", currentLevel, examples)
 
-	features := examples.getFeatures()
+	features := c.featureSelector.getFeatures(examples)
 	candidateSplits := make(chan split, len(features))
 	for _, feature := range features {
 		go func(feature int) {
@@ -180,7 +181,7 @@ func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64)
 	glog.Infof("Terminating at level %v with %v examples", currentLevel, len(examples))
 	glog.V(2).Infof("Terminating with examples: %v", examples)
 	// Otherwise, return the leaf
-	leafWeight := c.lossFunction.GetLeafWeight(examples)
+	leafWeight := c.leafWeight(examples)
 	shrinkage := 1.0
 	if c.shrinkageConfig != nil && c.shrinkageConfig.Shrinkage != nil {
 		shrinkage = c.shrinkageConfig.GetShrinkage()

@@ -43,7 +43,10 @@ func (b *boostingTreeGenerator) updateExampleWeights(e Examples) {
 
 func (b *boostingTreeGenerator) constructWeakLearner(e Examples) {
 	weakLearner := (&regressionSplitter{
-		lossFunction:         b.getLossFunction(),
+		leafWeight: func(e Examples) float64 {
+			return b.getLossFunction().GetLeafWeight(e)
+		},
+		featureSelector:      naiveFeatureSelector{},
 		splittingConstraints: b.forestConfig.GetSplittingConstraints(),
 		shrinkageConfig:      b.forestConfig.GetShrinkageConfig(),
 	}).GenerateTree(e)
@@ -103,7 +106,7 @@ func (b *boostingTreeGenerator) initializeForest(e Examples) {
 	})
 }
 
-func (b *boostingTreeGenerator) ConstructBoostingTree(e Examples) *pb.Forest {
+func (b *boostingTreeGenerator) ConstructForest(e Examples) *pb.Forest {
 	glog.Infof("Initializing forest with config %+v", b.forestConfig)
 	b.initializeForest(e)
 	for i := 0; i < int(b.forestConfig.GetNumWeakLearners()); i++ {
@@ -111,11 +114,4 @@ func (b *boostingTreeGenerator) ConstructBoostingTree(e Examples) *pb.Forest {
 		b.doBoostingRound(e, i)
 	}
 	return b.forest
-}
-
-// NewBoostingTreeGenerator returns a boosting tree given the forest config
-func NewBoostingTreeGenerator(forestConfig *pb.ForestConfig) *boostingTreeGenerator {
-	return &boostingTreeGenerator{
-		forestConfig: forestConfig,
-	}
 }
