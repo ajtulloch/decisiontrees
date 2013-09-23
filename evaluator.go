@@ -4,6 +4,7 @@ import (
 	"fmt"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"github.com/golang/glog"
+	"math"
 )
 
 // Evaluator implements the evaluator of a decision tree given
@@ -151,6 +152,10 @@ func (f *fastForestEvaluator) Evaluate(features []float64) float64 {
 	return sum
 }
 
+type averagingEvaluator struct {
+	trees []Evaluator
+}
+
 // NewFastForestEvaluator returns a flattened tree representation
 // used for efficient evaluation
 func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
@@ -165,5 +170,18 @@ func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
 		}
 		e.trees = append(e.trees, evaluator)
 	}
+	switch f.GetRescaling() {
+	case pb.Rescaling_NONE:
+		return e, nil
+	case pb.Rescaling_AVERAGING:
+		return EvaluatorFunc(func(features []float64) float64 {
+			return e.Evaluate(features) / float64(len(e.trees))
+		}), nil
+	case pb.Rescaling_LOG_ODDS:
+		return EvaluatorFunc(func(features []float64) float64 {
+			return 1.0 / (1.0 + math.Exp(-2.0*e.Evaluate(features)))
+		}), nil
+	}
+	glog.Fatalf("Unknown rescaling: %v", f.GetRescaling)
 	return e, nil
 }

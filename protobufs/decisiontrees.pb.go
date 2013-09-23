@@ -52,6 +52,45 @@ func (x *LossFunction) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+type Rescaling int32
+
+const (
+	Rescaling_NONE      Rescaling = 1
+	Rescaling_AVERAGING Rescaling = 2
+	Rescaling_LOG_ODDS  Rescaling = 3
+)
+
+var Rescaling_name = map[int32]string{
+	1: "NONE",
+	2: "AVERAGING",
+	3: "LOG_ODDS",
+}
+var Rescaling_value = map[string]int32{
+	"NONE":      1,
+	"AVERAGING": 2,
+	"LOG_ODDS":  3,
+}
+
+func (x Rescaling) Enum() *Rescaling {
+	p := new(Rescaling)
+	*p = x
+	return p
+}
+func (x Rescaling) String() string {
+	return proto.EnumName(Rescaling_name, int32(x))
+}
+func (x Rescaling) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x.String())
+}
+func (x *Rescaling) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(Rescaling_value, data, "Rescaling")
+	if err != nil {
+		return err
+	}
+	*x = Rescaling(value)
+	return nil
+}
+
 type Algorithm int32
 
 const (
@@ -324,6 +363,7 @@ func (m *Annotation) GetAverageGain() float64 {
 
 type Forest struct {
 	Trees            []*TreeNode `protobuf:"bytes,1,rep,name=trees" json:"trees,omitempty" bson:"trees,omitempty"`
+	Rescaling        *Rescaling  `protobuf:"varint,2,opt,name=rescaling,enum=protobufs.Rescaling,def=1" json:"rescaling,omitempty" bson:"rescaling,omitempty"`
 	XXX_unrecognized []byte      `json:"-" bson:"-"`
 }
 
@@ -331,11 +371,20 @@ func (m *Forest) Reset()         { *m = Forest{} }
 func (m *Forest) String() string { return proto.CompactTextString(m) }
 func (*Forest) ProtoMessage()    {}
 
+const Default_Forest_Rescaling Rescaling = Rescaling_NONE
+
 func (m *Forest) GetTrees() []*TreeNode {
 	if m != nil {
 		return m.Trees
 	}
 	return nil
+}
+
+func (m *Forest) GetRescaling() Rescaling {
+	if m != nil && m.Rescaling != nil {
+		return *m.Rescaling
+	}
+	return Default_Forest_Rescaling
 }
 
 type SplittingConstraints struct {
@@ -716,6 +765,7 @@ func (m *TrainingRow) GetTrainingResults() *TrainingResults {
 
 func init() {
 	proto.RegisterEnum("protobufs.LossFunction", LossFunction_name, LossFunction_value)
+	proto.RegisterEnum("protobufs.Rescaling", Rescaling_name, Rescaling_value)
 	proto.RegisterEnum("protobufs.Algorithm", Algorithm_name, Algorithm_value)
 	proto.RegisterEnum("protobufs.TrainingStatus", TrainingStatus_name, TrainingStatus_value)
 	proto.RegisterEnum("protobufs.DataSource", DataSource_name, DataSource_value)

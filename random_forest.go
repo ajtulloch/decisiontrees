@@ -34,8 +34,10 @@ func (r *randomForestGenerator) constructRandomTree(e Examples) *pb.TreeNode {
 
 func (r *randomForestGenerator) ConstructForest(e Examples) *pb.Forest {
 	result := &pb.Forest{
-		Trees: make([]*pb.TreeNode, int(r.forestConfig.GetNumWeakLearners())),
+		Trees:     make([]*pb.TreeNode, int(r.forestConfig.GetNumWeakLearners())),
+		Rescaling: pb.Rescaling_AVERAGING.Enum(),
 	}
+
 	wg := sync.WaitGroup{}
 	for i := 0; i < int(r.forestConfig.GetNumWeakLearners()); i++ {
 		wg.Add(1)

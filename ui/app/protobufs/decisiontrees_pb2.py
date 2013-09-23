@@ -14,7 +14,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='protobufs/decisiontrees.proto',
   package='protobufs',
-  serialized_pb='\n\x1dprotobufs/decisiontrees.proto\x12\tprotobufs\")\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x01\"E\n\x07\x45xample\x12\r\n\x05label\x18\x01 \x01(\x01\x12\x15\n\rweightedLabel\x18\x02 \x01(\x01\x12\x14\n\x08\x66\x65\x61tures\x18\x03 \x03(\x01\x42\x02\x10\x01\"S\n\x0cTrainingData\x12!\n\x05train\x18\x01 \x03(\x0b\x32\x12.protobufs.Example\x12 \n\x04test\x18\x02 \x03(\x0b\x32\x12.protobufs.Example\"\xb4\x01\n\x08TreeNode\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\x03\x12\x12\n\nsplitValue\x18\x02 \x01(\x01\x12!\n\x04left\x18\x03 \x01(\x0b\x32\x13.protobufs.TreeNode\x12\"\n\x05right\x18\x04 \x01(\x0b\x32\x13.protobufs.TreeNode\x12\x11\n\tleafValue\x18\x05 \x01(\x01\x12)\n\nannotation\x18\x06 \x01(\x0b\x32\x15.protobufs.Annotation\"6\n\nAnnotation\x12\x13\n\x0bnumExamples\x18\x01 \x01(\x03\x12\x13\n\x0b\x61verageGain\x18\x02 \x01(\x01\",\n\x06\x46orest\x12\"\n\x05trees\x18\x01 \x03(\x0b\x32\x13.protobufs.TreeNode\"g\n\x14SplittingConstraints\x12\x15\n\rmaximumLevels\x18\x01 \x01(\x03\x12\x1a\n\x12minimumAverageGain\x18\x02 \x01(\x01\x12\x1c\n\x14minimumSamplesAtLeaf\x18\x03 \x01(\x03\"2\n\x12PruningConstraints\x12\x1c\n\x14\x63rossValidationFolds\x18\x01 \x01(\x03\">\n\x17InfluenceTrimmingConfig\x12\r\n\x05\x61lpha\x18\x01 \x01(\x01\x12\x14\n\x0cwarmupRounds\x18\x02 \x01(\x03\"W\n\x12LossFunctionConfig\x12-\n\x0clossFunction\x18\x01 \x01(\x0e\x32\x17.protobufs.LossFunction\x12\x12\n\nhuberAlpha\x18\x02 \x01(\x01\"$\n\x0fShrinkageConfig\x12\x11\n\tshrinkage\x18\x01 \x01(\x01\"q\n\x13StochasticityConfig\x12\x1c\n\x14perRoundSamplingRate\x18\x01 \x01(\x01\x12!\n\x19\x65xampleBoostrapProportion\x18\x02 \x01(\x01\x12\x19\n\x11\x66\x65\x61tureSampleSize\x18\x03 \x01(\x03\"\x81\x03\n\x0c\x46orestConfig\x12\x17\n\x0fnumWeakLearners\x18\x01 \x01(\x03\x12=\n\x14splittingConstraints\x18\x02 \x01(\x0b\x32\x1f.protobufs.SplittingConstraints\x12\x39\n\x12lossFunctionConfig\x18\x03 \x01(\x0b\x32\x1d.protobufs.LossFunctionConfig\x12\x43\n\x17influenceTrimmingConfig\x18\x04 \x01(\x0b\x32\".protobufs.InfluenceTrimmingConfig\x12\x33\n\x0fshrinkageConfig\x18\x05 \x01(\x0b\x32\x1a.protobufs.ShrinkageConfig\x12;\n\x13stochasticityConfig\x18\x06 \x01(\x0b\x32\x1e.protobufs.StochasticityConfig\x12\'\n\talgorithm\x18\x07 \x01(\x0e\x32\x14.protobufs.Algorithm\"F\n\x0cGridFsConfig\x12\x10\n\x08\x64\x61tabase\x18\x01 \x01(\t\x12\x16\n\ncollection\x18\x02 \x01(\t:\x02\x66s\x12\x0c\n\x04\x66ile\x18\x03 \x01(\t\"l\n\x10\x44\x61taSourceConfig\x12)\n\ndataSource\x18\x01 \x01(\x0e\x32\x15.protobufs.DataSource\x12-\n\x0cgridFsConfig\x18\x02 \x01(\x0b\x32\x17.protobufs.GridFsConfig\"\\\n\x0b\x45pochResult\x12\x0b\n\x03roc\x18\x01 \x01(\x01\x12\x10\n\x08logScore\x18\x02 \x01(\x01\x12\x19\n\x11normalizedEntropy\x18\x03 \x01(\x01\x12\x13\n\x0b\x63\x61libration\x18\x04 \x01(\x01\"?\n\x0fTrainingResults\x12,\n\x0c\x65pochResults\x18\x01 \x03(\x0b\x32\x16.protobufs.EpochResult\"\xfe\x01\n\x0bTrainingRow\x12-\n\x0c\x66orestConfig\x18\x01 \x01(\x0b\x32\x17.protobufs.ForestConfig\x12!\n\x06\x66orest\x18\x02 \x01(\x0b\x32\x11.protobufs.Forest\x12\x35\n\x10\x64\x61taSourceConfig\x18\x03 \x01(\x0b\x32\x1b.protobufs.DataSourceConfig\x12\x31\n\x0etrainingStatus\x18\x04 \x01(\x0e\x32\x19.protobufs.TrainingStatus\x12\x33\n\x0ftrainingResults\x18\x05 \x01(\x0b\x32\x1a.protobufs.TrainingResults*B\n\x0cLossFunction\x12\t\n\x05LOGIT\x10\x01\x12\x1c\n\x18LEAST_ABSOLUTE_DEVIATION\x10\x02\x12\t\n\x05HUBER\x10\x03*,\n\tAlgorithm\x12\x0c\n\x08\x42OOSTING\x10\x01\x12\x11\n\rRANDOM_FOREST\x10\x02*=\n\x0eTrainingStatus\x12\r\n\tUNCLAIMED\x10\x01\x12\x0e\n\nPROCESSING\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03*\x18\n\nDataSource\x12\n\n\x06GRIDFS\x10\x01')
+  serialized_pb='\n\x1dprotobufs/decisiontrees.proto\x12\tprotobufs\")\n\x07\x46\x65\x61ture\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\x03\x12\r\n\x05value\x18\x02 \x01(\x01\"E\n\x07\x45xample\x12\r\n\x05label\x18\x01 \x01(\x01\x12\x15\n\rweightedLabel\x18\x02 \x01(\x01\x12\x14\n\x08\x66\x65\x61tures\x18\x03 \x03(\x01\x42\x02\x10\x01\"S\n\x0cTrainingData\x12!\n\x05train\x18\x01 \x03(\x0b\x32\x12.protobufs.Example\x12 \n\x04test\x18\x02 \x03(\x0b\x32\x12.protobufs.Example\"\xb4\x01\n\x08TreeNode\x12\x0f\n\x07\x66\x65\x61ture\x18\x01 \x01(\x03\x12\x12\n\nsplitValue\x18\x02 \x01(\x01\x12!\n\x04left\x18\x03 \x01(\x0b\x32\x13.protobufs.TreeNode\x12\"\n\x05right\x18\x04 \x01(\x0b\x32\x13.protobufs.TreeNode\x12\x11\n\tleafValue\x18\x05 \x01(\x01\x12)\n\nannotation\x18\x06 \x01(\x0b\x32\x15.protobufs.Annotation\"6\n\nAnnotation\x12\x13\n\x0bnumExamples\x18\x01 \x01(\x03\x12\x13\n\x0b\x61verageGain\x18\x02 \x01(\x01\"[\n\x06\x46orest\x12\"\n\x05trees\x18\x01 \x03(\x0b\x32\x13.protobufs.TreeNode\x12-\n\trescaling\x18\x02 \x01(\x0e\x32\x14.protobufs.Rescaling:\x04NONE\"g\n\x14SplittingConstraints\x12\x15\n\rmaximumLevels\x18\x01 \x01(\x03\x12\x1a\n\x12minimumAverageGain\x18\x02 \x01(\x01\x12\x1c\n\x14minimumSamplesAtLeaf\x18\x03 \x01(\x03\"2\n\x12PruningConstraints\x12\x1c\n\x14\x63rossValidationFolds\x18\x01 \x01(\x03\">\n\x17InfluenceTrimmingConfig\x12\r\n\x05\x61lpha\x18\x01 \x01(\x01\x12\x14\n\x0cwarmupRounds\x18\x02 \x01(\x03\"W\n\x12LossFunctionConfig\x12-\n\x0clossFunction\x18\x01 \x01(\x0e\x32\x17.protobufs.LossFunction\x12\x12\n\nhuberAlpha\x18\x02 \x01(\x01\"$\n\x0fShrinkageConfig\x12\x11\n\tshrinkage\x18\x01 \x01(\x01\"q\n\x13StochasticityConfig\x12\x1c\n\x14perRoundSamplingRate\x18\x01 \x01(\x01\x12!\n\x19\x65xampleBoostrapProportion\x18\x02 \x01(\x01\x12\x19\n\x11\x66\x65\x61tureSampleSize\x18\x03 \x01(\x03\"\x81\x03\n\x0c\x46orestConfig\x12\x17\n\x0fnumWeakLearners\x18\x01 \x01(\x03\x12=\n\x14splittingConstraints\x18\x02 \x01(\x0b\x32\x1f.protobufs.SplittingConstraints\x12\x39\n\x12lossFunctionConfig\x18\x03 \x01(\x0b\x32\x1d.protobufs.LossFunctionConfig\x12\x43\n\x17influenceTrimmingConfig\x18\x04 \x01(\x0b\x32\".protobufs.InfluenceTrimmingConfig\x12\x33\n\x0fshrinkageConfig\x18\x05 \x01(\x0b\x32\x1a.protobufs.ShrinkageConfig\x12;\n\x13stochasticityConfig\x18\x06 \x01(\x0b\x32\x1e.protobufs.StochasticityConfig\x12\'\n\talgorithm\x18\x07 \x01(\x0e\x32\x14.protobufs.Algorithm\"F\n\x0cGridFsConfig\x12\x10\n\x08\x64\x61tabase\x18\x01 \x01(\t\x12\x16\n\ncollection\x18\x02 \x01(\t:\x02\x66s\x12\x0c\n\x04\x66ile\x18\x03 \x01(\t\"l\n\x10\x44\x61taSourceConfig\x12)\n\ndataSource\x18\x01 \x01(\x0e\x32\x15.protobufs.DataSource\x12-\n\x0cgridFsConfig\x18\x02 \x01(\x0b\x32\x17.protobufs.GridFsConfig\"\\\n\x0b\x45pochResult\x12\x0b\n\x03roc\x18\x01 \x01(\x01\x12\x10\n\x08logScore\x18\x02 \x01(\x01\x12\x19\n\x11normalizedEntropy\x18\x03 \x01(\x01\x12\x13\n\x0b\x63\x61libration\x18\x04 \x01(\x01\"?\n\x0fTrainingResults\x12,\n\x0c\x65pochResults\x18\x01 \x03(\x0b\x32\x16.protobufs.EpochResult\"\xfe\x01\n\x0bTrainingRow\x12-\n\x0c\x66orestConfig\x18\x01 \x01(\x0b\x32\x17.protobufs.ForestConfig\x12!\n\x06\x66orest\x18\x02 \x01(\x0b\x32\x11.protobufs.Forest\x12\x35\n\x10\x64\x61taSourceConfig\x18\x03 \x01(\x0b\x32\x1b.protobufs.DataSourceConfig\x12\x31\n\x0etrainingStatus\x18\x04 \x01(\x0e\x32\x19.protobufs.TrainingStatus\x12\x33\n\x0ftrainingResults\x18\x05 \x01(\x0b\x32\x1a.protobufs.TrainingResults*B\n\x0cLossFunction\x12\t\n\x05LOGIT\x10\x01\x12\x1c\n\x18LEAST_ABSOLUTE_DEVIATION\x10\x02\x12\t\n\x05HUBER\x10\x03*2\n\tRescaling\x12\x08\n\x04NONE\x10\x01\x12\r\n\tAVERAGING\x10\x02\x12\x0c\n\x08LOG_ODDS\x10\x03*,\n\tAlgorithm\x12\x0c\n\x08\x42OOSTING\x10\x01\x12\x11\n\rRANDOM_FOREST\x10\x02*=\n\x0eTrainingStatus\x12\r\n\tUNCLAIMED\x10\x01\x12\x0e\n\nPROCESSING\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03*\x18\n\nDataSource\x12\n\n\x06GRIDFS\x10\x01')
 
 _LOSSFUNCTION = _descriptor.EnumDescriptor(
   name='LossFunction',
@@ -37,11 +37,37 @@ _LOSSFUNCTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1977,
-  serialized_end=2043,
+  serialized_start=2024,
+  serialized_end=2090,
 )
 
 LossFunction = enum_type_wrapper.EnumTypeWrapper(_LOSSFUNCTION)
+_RESCALING = _descriptor.EnumDescriptor(
+  name='Rescaling',
+  full_name='protobufs.Rescaling',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='NONE', index=0, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='AVERAGING', index=1, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LOG_ODDS', index=2, number=3,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=2092,
+  serialized_end=2142,
+)
+
+Rescaling = enum_type_wrapper.EnumTypeWrapper(_RESCALING)
 _ALGORITHM = _descriptor.EnumDescriptor(
   name='Algorithm',
   full_name='protobufs.Algorithm',
@@ -59,8 +85,8 @@ _ALGORITHM = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2045,
-  serialized_end=2089,
+  serialized_start=2144,
+  serialized_end=2188,
 )
 
 Algorithm = enum_type_wrapper.EnumTypeWrapper(_ALGORITHM)
@@ -85,8 +111,8 @@ _TRAININGSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2091,
-  serialized_end=2152,
+  serialized_start=2190,
+  serialized_end=2251,
 )
 
 TrainingStatus = enum_type_wrapper.EnumTypeWrapper(_TRAININGSTATUS)
@@ -103,14 +129,17 @@ _DATASOURCE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=2154,
-  serialized_end=2178,
+  serialized_start=2253,
+  serialized_end=2277,
 )
 
 DataSource = enum_type_wrapper.EnumTypeWrapper(_DATASOURCE)
 LOGIT = 1
 LEAST_ABSOLUTE_DEVIATION = 2
 HUBER = 3
+NONE = 1
+AVERAGING = 2
+LOG_ODDS = 3
 BOOSTING = 1
 RANDOM_FOREST = 2
 UNCLAIMED = 1
@@ -344,6 +373,13 @@ _FOREST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='rescaling', full_name='protobufs.Forest.rescaling', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=True, default_value=1,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -354,7 +390,7 @@ _FOREST = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=482,
-  serialized_end=526,
+  serialized_end=573,
 )
 
 
@@ -395,8 +431,8 @@ _SPLITTINGCONSTRAINTS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=528,
-  serialized_end=631,
+  serialized_start=575,
+  serialized_end=678,
 )
 
 
@@ -423,8 +459,8 @@ _PRUNINGCONSTRAINTS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=633,
-  serialized_end=683,
+  serialized_start=680,
+  serialized_end=730,
 )
 
 
@@ -458,8 +494,8 @@ _INFLUENCETRIMMINGCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=685,
-  serialized_end=747,
+  serialized_start=732,
+  serialized_end=794,
 )
 
 
@@ -493,8 +529,8 @@ _LOSSFUNCTIONCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=749,
-  serialized_end=836,
+  serialized_start=796,
+  serialized_end=883,
 )
 
 
@@ -521,8 +557,8 @@ _SHRINKAGECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=838,
-  serialized_end=874,
+  serialized_start=885,
+  serialized_end=921,
 )
 
 
@@ -563,8 +599,8 @@ _STOCHASTICITYCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=876,
-  serialized_end=989,
+  serialized_start=923,
+  serialized_end=1036,
 )
 
 
@@ -633,8 +669,8 @@ _FORESTCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=992,
-  serialized_end=1377,
+  serialized_start=1039,
+  serialized_end=1424,
 )
 
 
@@ -675,8 +711,8 @@ _GRIDFSCONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1379,
-  serialized_end=1449,
+  serialized_start=1426,
+  serialized_end=1496,
 )
 
 
@@ -710,8 +746,8 @@ _DATASOURCECONFIG = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1451,
-  serialized_end=1559,
+  serialized_start=1498,
+  serialized_end=1606,
 )
 
 
@@ -759,8 +795,8 @@ _EPOCHRESULT = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1561,
-  serialized_end=1653,
+  serialized_start=1608,
+  serialized_end=1700,
 )
 
 
@@ -787,8 +823,8 @@ _TRAININGRESULTS = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1655,
-  serialized_end=1718,
+  serialized_start=1702,
+  serialized_end=1765,
 )
 
 
@@ -843,8 +879,8 @@ _TRAININGROW = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1721,
-  serialized_end=1975,
+  serialized_start=1768,
+  serialized_end=2022,
 )
 
 _TRAININGDATA.fields_by_name['train'].message_type = _EXAMPLE
@@ -853,6 +889,7 @@ _TREENODE.fields_by_name['left'].message_type = _TREENODE
 _TREENODE.fields_by_name['right'].message_type = _TREENODE
 _TREENODE.fields_by_name['annotation'].message_type = _ANNOTATION
 _FOREST.fields_by_name['trees'].message_type = _TREENODE
+_FOREST.fields_by_name['rescaling'].enum_type = _RESCALING
 _LOSSFUNCTIONCONFIG.fields_by_name['lossFunction'].enum_type = _LOSSFUNCTION
 _FORESTCONFIG.fields_by_name['splittingConstraints'].message_type = _SPLITTINGCONSTRAINTS
 _FORESTCONFIG.fields_by_name['lossFunctionConfig'].message_type = _LOSSFUNCTIONCONFIG

@@ -6,6 +6,12 @@ enum LossFunction {
   HUBER = 3;
 }
 
+enum Rescaling {
+  NONE = 1;
+  AVERAGING = 2;
+  LOG_ODDS = 3;
+}
+
 message Feature {
   optional int64 feature = 1;
   optional double value = 2;
@@ -43,6 +49,7 @@ message Annotation {
 
 message Forest {
   repeated TreeNode trees = 1;
+  optional Rescaling rescaling = 2 [default=NONE];
 }
 
 message SplittingConstraints {

@@ -95,9 +95,17 @@ func (b *boostingTreeGenerator) getLossFunction() LossFunction {
 	return NewLossFunction(b.forestConfig.GetLossFunctionConfig(), evaluator)
 }
 
+func (b *boostingTreeGenerator) getRescaling() pb.Rescaling {
+	if b.forestConfig.GetLossFunctionConfig().GetLossFunction() == pb.LossFunction_LOGIT {
+		return pb.Rescaling_LOG_ODDS
+	}
+	return pb.Rescaling_NONE
+}
+
 func (b *boostingTreeGenerator) initializeForest(e Examples) {
 	b.forest = &pb.Forest{
-		Trees: make([]*pb.TreeNode, 0, b.forestConfig.GetNumWeakLearners()),
+		Trees:     make([]*pb.TreeNode, 0, b.forestConfig.GetNumWeakLearners()),
+		Rescaling: b.getRescaling().Enum(),
 	}
 
 	// Initial prior
