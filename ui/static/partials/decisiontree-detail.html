@@ -1,18 +1,36 @@
-<nvd3-line-chart 
-  data="epochResults" 
-  id="epochResults" 
-  width="800" 
-  height="400" 
-  showXAxis="true" 
-  showLegend="true"
-  interactive="true"
-  tooltips="true"
-  showYAxis="true">
-  <svg></svg>
-</nvd3-line-chart>
- 
-<div class="row-fluid" ng-repeat="treeRow in treeRows">
-    <div class="span4" ng-repeat="tree in treeRow"> 
-        <a href="#/decisiontrees/{{trainingRow._id}}/trees/{{ tree.index }}">Weak Learner {{ tree.index + 1 }}</a>
-    </div>
+<div class="row-fluid">
+  <div class="span6">
+    <nvd3-line-chart 
+      data="epochResults" 
+      id="epochResults" 
+      width="500" 
+      height="300" 
+      showXAxis="true" 
+      showLegend="true"
+      interactive="true"
+      tooltips="true"
+      showYAxis="true">
+      <svg></svg>
+    </nvd3-line-chart>
+  </div>
+  <div class="span6">
+    <table class="table table-bordered">
+      <thead>
+        <th>#</th>
+        <th>Number of nodes</th>
+        <th>Loss</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="tree in trainingRow.forest.trees">
+          <td>
+            <a href="#/decisiontrees/{{trainingRow._id}}/trees/{{ $index }}">
+              {{ $index + 1 }}
+            </a>
+          </td>
+          <td>{{ tree.numNodes }}</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

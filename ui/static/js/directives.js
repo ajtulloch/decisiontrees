@@ -2,7 +2,7 @@
 
 /* Directives */
 
-angular.module('decisiontreeDirectives', []).directive('treeVisualization', function() {
+angular.module('decisiontreeDirectives', []).directive('treeVisualization', [function() {
   // constants
   var m = [10, 10, 10, 10];
   var w = 900 - m[1] - m[3];
@@ -21,7 +21,7 @@ angular.module('decisiontreeDirectives', []).directive('treeVisualization', func
           .attr("height", h + m[0] + m[2])
           .attr("class", "tree-visualization");
 
-      scope.$watch('tree', function (newTree, oldTree) {
+      scope.$watch('tree', function(newTree) {
         // clear the elements inside of the directive
         vis.selectAll('*').remove();
 
@@ -46,7 +46,7 @@ angular.module('decisiontreeDirectives', []).directive('treeVisualization', func
 
         // Deep copy the tree to avoid issues with JSONify'ing recusive
         // objects (d3.layout.tree does some weird modifications)
-        var nodes = tree.nodes(JSON.parse(JSON.stringify(newTree)));
+        var nodes = tree.nodes(JSON.parse(newTree));
         var links = tree.links(nodes);
 
         // Offset each node
@@ -92,13 +92,18 @@ angular.module('decisiontreeDirectives', []).directive('treeVisualization', func
             return 3;
           })
           .text(function(d) {
+            console.log(d)
             if (d.splitValue) {
               return "F:" + d.feature + " < " + d.splitValue.toPrecision(2);
             } 
-            return "Prediction: " + d.leafValue.toPrecision(2)
+            if (d.leafValue) {
+              return "Prediction: " + d.leafValue.toPrecision(2)
+            }
+          
+            return "Malformed: " + JSON.stringify(d)
           });
 
       });
     }
   }
-});
+}]);

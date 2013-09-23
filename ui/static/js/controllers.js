@@ -30,24 +30,17 @@ function DecisionTreeDetailCtrl($scope, $routeParams, $log, DecisionTree) {
         }),
       ]
 
-      
-      var treeRows = []
-      var currentRow = []
-      for (var i = 0; i < row.forest.trees.length; i++) {
-        row.forest.trees[i].index = i;
-        currentRow.push(row.forest.trees[i])
-        if (currentRow.length >= $scope.TREE_ROW_SIZE) {
-            treeRows.push(currentRow)
-            currentRow = []
+      // Compute the number of trees 
+      $scope.trainingRow.forest.trees.forEach(function(n) {
+        var numNodes = function recur(t) {
+          if (t.splitValue) {
+            return recur(t.left) + recur(t.right)
+          } else {
+            return 1
+          }
         }
-      }
-
-      if (currentRow.length) {
-        treeRows.push(currentRow)
-      }
-
-      $scope.treeRows = treeRows
-      $log.info($scope.treeRows)
+        n.numNodes = numNodes(n)
+      })
     }
   )
 }

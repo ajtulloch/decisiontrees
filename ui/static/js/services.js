@@ -8,4 +8,3 @@ angular.module('decisionTreeServices', ['ngResource']).
   factory('WeakLearner', function($resource) { 
     return $resource('/api/decisiontrees/:taskId/trees/:treeId')
   });
-
