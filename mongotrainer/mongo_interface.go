@@ -27,30 +27,35 @@ type idRow struct {
 }
 
 func (m *MongoTrainer) pollTasks(c chan *trainingTask) {
+	getUnclaimedTask := func() {
+		id := idRow{}
+		err := m.Collection.Find(bson.M{
+			"trainingStatus": pb.TrainingStatus_UNCLAIMED.Enum(),
+		}).Select(bson.M{
+			"_id": 1,
+		}).One(&id)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+
+		t := &pb.TrainingRow{}
+		err = m.Collection.FindId(id.ID).One(t)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+		c <- &trainingTask{
+			objectID: id.ID,
+			row:      t,
+		}
+	}
+
+	getUnclaimedTask()
 	for {
 		select {
 		case <-time.After(*MongoPollTime):
-			id := idRow{}
-			err := m.Collection.Find(bson.M{
-				"trainingStatus": pb.TrainingStatus_UNCLAIMED.Enum(),
-			}).Select(bson.M{
-				"_id": 1,
-			}).One(&id)
-			if err != nil {
-				glog.Error(err)
-				continue
-			}
-
-			t := &pb.TrainingRow{}
-			err = m.Collection.FindId(id.ID).One(t)
-			if err != nil {
-				glog.Error(err)
-				continue
-			}
-			c <- &trainingTask{
-				objectID: id.ID,
-				row:      t,
-			}
+			getUnclaimedTask()
 		}
 	}
 }
@@ -133,10 +138,10 @@ func (m *MongoTrainer) cas(objectID bson.ObjectId, from, to pb.TrainingStatus) e
 	if err != nil {
 		return err
 	}
+
 	if changeInfo.Updated != 1 {
 		return fmt.Errorf("failed CAS'ing task %v from state %v to state %v", objectID, from, to)
 	}
-
 	glog.Infof("Updated objectId %v from state %v to state %v", objectID, from, to)
 	return nil
 }

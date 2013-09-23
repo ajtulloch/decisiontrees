@@ -2,14 +2,13 @@ package mongotrainer
 
 import (
 	"code.google.com/p/goprotobuf/proto"
-	// "github.com/golang/glog"
 	pb "github.com/ajtulloch/decisiontrees/protobufs"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"testing"
 )
 
-func TestMongoInteraction(t *testing.T) {
+func TestTaskClaiming(t *testing.T) {
 	session, err := mgo.Dial(*MongoServer)
 	if err != nil {
 		panic(err)
@@ -27,19 +26,40 @@ func TestMongoInteraction(t *testing.T) {
 			NumWeakLearners: proto.Int64(5),
 		},
 	}
+
 	err = c.Insert(entry)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
+	m := MongoTrainer{Collection: c}
+	channel := make(chan *trainingTask)
 	result := pb.TrainingRow{}
-	err = c.Find(bson.M{}).One(&result)
+	go func() { m.pollTasks(channel) }()
+	task := <-channel
+	t.Logf("Claimed task: id: %v, row: %v", task.objectID, task.row)
+
+	assertState := func(status pb.TrainingStatus) {
+		err = c.Find(bson.M{}).One(&result)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if result.GetTrainingStatus() != status {
+			t.Fatalf("Expected status %v, got %v", status, result.GetTrainingStatus())
+		}
+	}
+
+	assertState(pb.TrainingStatus_UNCLAIMED)
+	err = m.claimTask(task)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	t.Log("Got result: ", result.String())
-	if !proto.Equal(&result, &entry) {
-		t.Fatal(result, entry)
+	assertState(pb.TrainingStatus_PROCESSING)
+	err = m.finalizeTask(task)
+	if err != nil {
+		t.Fatal(err)
 	}
+	assertState(pb.TrainingStatus_FINISHED)
 	c.Remove(bson.M{})
 }
