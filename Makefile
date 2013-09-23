@@ -30,5 +30,7 @@ install:
 
 lint:
 	find . -iname '*.go' | grep -v protobufs | xargs golint 
+	go vet ./...
+
 
 .PHONY: coverage dependencies test

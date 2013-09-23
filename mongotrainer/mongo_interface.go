@@ -23,7 +23,7 @@ type trainingTask struct {
 }
 
 type idRow struct {
-	ID bson.ObjectId "_id,omitempty"
+	ID bson.ObjectId `bson:"_id,omitempty"`
 }
 
 func (m *MongoTrainer) pollTasks(c chan *trainingTask) {
