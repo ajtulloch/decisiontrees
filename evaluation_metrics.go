@@ -130,8 +130,9 @@ func LearningCurve(f *pb.Forest, e Examples) *pb.TrainingResults {
 	}
 
 	for i := range f.GetTrees() {
-		evaluator, err := NewFastForestEvaluator(&pb.Forest{
-			Trees: f.GetTrees()[:i],
+		evaluator, err := NewRescaledFastForestEvaluator(&pb.Forest{
+			Trees:     f.GetTrees()[:i],
+			Rescaling: f.GetRescaling().Enum(),
 		})
 		if err != nil {
 			glog.Fatal(err)

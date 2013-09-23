@@ -16,13 +16,9 @@ type ForestGenerator interface {
 func NewForestGenerator(forestConfig *pb.ForestConfig) (ForestGenerator, error) {
 	switch forestConfig.GetAlgorithm() {
 	case pb.Algorithm_BOOSTING:
-		return &boostingTreeGenerator{
-			forestConfig: forestConfig,
-		}, nil
+		return &boostingTreeGenerator{forestConfig: forestConfig}, nil
 	case pb.Algorithm_RANDOM_FOREST:
-		return &randomForestGenerator{
-			forestConfig: forestConfig,
-		}, nil
+		return &randomForestGenerator{forestConfig: forestConfig}, nil
 	}
 	return nil, fmt.Errorf("unknown algorithm type: %v", forestConfig.GetAlgorithm())
 }

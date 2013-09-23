@@ -78,7 +78,7 @@ func (b *boostingTreeGenerator) doBoostingRound(e Examples, round int) {
 }
 
 func (b *boostingTreeGenerator) computeTrainingMetrics(e Examples) pb.EpochResult {
-	evaluator, err := NewFastForestEvaluator(b.forest)
+	evaluator, err := NewRescaledFastForestEvaluator(b.forest)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func (b *boostingTreeGenerator) computeTrainingMetrics(e Examples) pb.EpochResul
 }
 
 func (b *boostingTreeGenerator) getLossFunction() LossFunction {
-	evaluator, err := NewFastForestEvaluator(b.forest)
+	evaluator, err := newUnscaledFastForestEvaluator(b.forest)
 	if err != nil {
 		glog.Fatal(err)
 	}

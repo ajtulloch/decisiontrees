@@ -64,7 +64,7 @@ func TestTreeEvaluation(t *testing.T) {
 	numEvaluations := 1
 	for i := 0; i < numForests; i++ {
 		forest := makeForest(numTrees, numLevels, numFeatures)
-		evaluator, err := NewFastForestEvaluator(forest)
+		evaluator, err := newUnscaledFastForestEvaluator(forest)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -105,7 +105,7 @@ func benchEvaluator(f func(*pb.Forest) Evaluator, b *testing.B) {
 func BenchmarkFastTreeEvaluation(b *testing.B) {
 	flag.Parse()
 	f := func(forest *pb.Forest) Evaluator {
-		evaluator, err := NewFastForestEvaluator(forest)
+		evaluator, err := newUnscaledFastForestEvaluator(forest)
 		if err != nil {
 			glog.Fatal(err)
 		}

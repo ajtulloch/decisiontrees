@@ -152,13 +152,10 @@ func (f *fastForestEvaluator) Evaluate(features []float64) float64 {
 	return sum
 }
 
-type averagingEvaluator struct {
-	trees []Evaluator
-}
-
-// NewFastForestEvaluator returns a flattened tree representation
-// used for efficient evaluation
-func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
+// NewRescaledFastForestEvaluator returns an evalator for a tree
+// that automatically corrects for various scaling factors required
+// for a given evaluation
+func NewRescaledFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
 	e := &fastForestEvaluator{
 		trees: make([]Evaluator, 0, len(f.GetTrees())),
 	}
@@ -170,6 +167,7 @@ func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
 		}
 		e.trees = append(e.trees, evaluator)
 	}
+
 	switch f.GetRescaling() {
 	case pb.Rescaling_NONE:
 		return e, nil
@@ -182,6 +180,23 @@ func NewFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
 			return 1.0 / (1.0 + math.Exp(-2.0*e.Evaluate(features)))
 		}), nil
 	}
-	glog.Fatalf("Unknown rescaling: %v", f.GetRescaling)
+
+	return nil, fmt.Errorf("unknown rescaling method: %v", f.GetRescaling)
+}
+
+// NewFastForestEvaluator returns a flattened tree representation
+// used for efficient evaluation
+func newUnscaledFastForestEvaluator(f *pb.Forest) (Evaluator, error) {
+	e := &fastForestEvaluator{
+		trees: make([]Evaluator, 0, len(f.GetTrees())),
+	}
+
+	for _, t := range f.GetTrees() {
+		evaluator, err := newFastTreeEvaluator(t)
+		if err != nil {
+			return nil, err
+		}
+		e.trees = append(e.trees, evaluator)
+	}
 	return e, nil
 }
