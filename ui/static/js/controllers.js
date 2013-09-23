@@ -1,7 +1,7 @@
 'use strict';
 
 /* Controllers */
-function DecisionTreeListCtrl($scope, DecisionTree) {
+function DecisionTreeListCtrl($scope, DecisionTree, Page) {
   $scope.trainingRows = DecisionTree.query()
 }
 
@@ -47,4 +47,8 @@ function DecisionTreeDetailCtrl($scope, $routeParams, $log, DecisionTree) {
 
 function DecisionTreeWeakLearnerCtrl($scope, $routeParams, $log, WeakLearner) {
   $scope.tree = WeakLearner.get({taskId: $routeParams.taskId, treeId: $routeParams.treeId})
+}
+
+function TitleCtrl($scope, Page) {
+  $scope.Page = Page
 }

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en" ng-app="decisiontrees">
+<html lang="en" ng-app="decisiontrees" ng-controller="TitleCtrl">
 <head>
   <meta charset="utf-8">
-  <title>Decision Trees</title>
+  <title ng-bind="Page.title()">Decision Tree Trainer</title>
   <link rel="stylesheet" href="static/css/app.css">
   <link rel="stylesheet" href="static/css/bootstrap.css">
   <link rel="stylesheet" href="static/lib/bower_components/nvd3/src/nv.d3.css">
@@ -20,9 +20,9 @@
 <body>
   <div class="container">
     <div class="page-header">
-      <h1>Decision Tree Trainer</h1>
+      <h1>{{ Page.title() }}</h1>
       <p class="lead">
-        Optimization, Monitoring, and Visualization
+        {{ Page.subtitle() }}
       </p>
     </div>
     <div ng-view></div>
