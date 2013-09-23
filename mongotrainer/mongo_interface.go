@@ -27,7 +27,7 @@ type idRow struct {
 }
 
 func (m *MongoTrainer) pollTasks(c chan *trainingTask) {
-	getUnclaimedTask := func() {
+	sendUnclaimedTask := func() {
 		id := idRow{}
 		err := m.Collection.Find(bson.M{
 			"trainingStatus": pb.TrainingStatus_UNCLAIMED.Enum(),
@@ -51,12 +51,9 @@ func (m *MongoTrainer) pollTasks(c chan *trainingTask) {
 		}
 	}
 
-	getUnclaimedTask()
 	for {
-		select {
-		case <-time.After(*MongoPollTime):
-			getUnclaimedTask()
-		}
+		sendUnclaimedTask()
+		time.Sleep(*MongoPollTime)
 	}
 }
 
