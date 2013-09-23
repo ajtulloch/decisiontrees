@@ -29,3 +29,18 @@ class DecisionTreeTaskList(restful.Resource):
 
     def options(self):
         pass
+
+
+class DecisionTreeWeakLearner(restful.Resource):
+    def get(self, task_id, tree_id):
+        task = current_app.mongo.db.decisiontrees.find_one(
+            {"_id": ObjectId(task_id)}
+        )
+
+        if task is None:
+            restful.abort(404, message="Task {} doesn't exist".format(task_id))
+
+        return task["forest"]["trees"][tree_id], 201
+
+    def options(self):
+        pass

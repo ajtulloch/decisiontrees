@@ -9,7 +9,6 @@ def fake_config(num_trees):
     return pb.ForestConfig(
         splittingConstraints=pb.SplittingConstraints(
             maximumLevels=random.randint(4, 8),
-            featuresConsideredFraction=random.uniform(0.5, 1.0)
         ),
         lossFunctionConfig=pb.LossFunctionConfig(
             lossFunction=pb.LOGIT,

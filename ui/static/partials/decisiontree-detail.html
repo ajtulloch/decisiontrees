@@ -11,13 +11,8 @@
   <svg></svg>
 </nvd3-line-chart>
  
-<table class="table table-bordered">
-  <tbody>
-    <tr ng-repeat="tree in trainingRow.forest.trees">
-      <td> 
-        <tree-visualization tree="tree"></tree-visualization>
-        <pre>{{ tree | json }}</pre>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="row-fluid" ng-repeat="treeRow in treeRows">
+    <div class="span4" ng-repeat="tree in treeRow"> 
+        <a href="#/decisiontrees/{{trainingRow._id}}/trees/{{ tree.index }}">Weak Learner {{ tree.index + 1 }}</a>
+    </div>
+</div>

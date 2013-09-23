@@ -20,4 +20,10 @@ api.add_resource(
     resources.DecisionTreeTask,
     '/api/decisiontrees/<string:task_id>'
 )
+
+api.add_resource(
+    resources.DecisionTreeWeakLearner,
+    '/api/decisiontrees/<string:task_id>/trees/<int:tree_id>'
+)
+
 api.add_resource(resources.DecisionTreeTaskList, '/api/decisiontrees/')
