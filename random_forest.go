@@ -43,7 +43,9 @@ func (r *randomForestGenerator) ConstructForest(e Examples) *pb.Forest {
 		wg.Add(1)
 		go func(i int) {
 			result.Trees[i] = r.constructRandomTree(e)
+			wg.Done()
 		}(i)
 	}
+	wg.Wait()
 	return result
 }
