@@ -1,15 +1,15 @@
 all: test
 
 test:
-	python test/test.py
+	python -m test.test
 	./static/scripts/e2e-test.sh
 	./static/scripts/test.sh
 
 run:
-	python run.py
+	python -m run
 
 fake:
-	python test/fake_data.py 
+	python -m test.fake_data
 	
 clean: 
 	find . -iname *.pyc | xargs rm

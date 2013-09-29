@@ -4,15 +4,15 @@ from flask.ext.pymongo import PyMongo
 import app.decisiontrees.resources as resources
 from app import constants
 
-app = Flask(__name__, static_folder=constants.STATIC_FOLDER)
-app.config['MONGO_DBNAME'] = constants.DB_NAME
+application = Flask(__name__, static_folder=constants.STATIC_FOLDER)
+application.config['MONGO_DBNAME'] = constants.DB_NAME
 
-app.mongo = PyMongo(app)
+application.mongo = PyMongo(application)
 
-api = restful.Api(app)
+api = restful.Api(application)
 
 
-@app.route("/")
+@application.route("/")
 def index():
     return make_response(open('static/index.html').read())
 

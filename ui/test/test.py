@@ -1,4 +1,4 @@
-from app import app
+from app import application as app
 import app.protobufs.decisiontrees_pb2 as pb
 from flask.ext.pymongo import PyMongo
 from protobuf_to_dict import protobuf_to_dict
