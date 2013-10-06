@@ -157,8 +157,9 @@ func (c *regressionSplitter) generateTree(examples Examples, currentLevel int64)
 			Feature:    proto.Int64(int64(bestSplit.feature)),
 			SplitValue: proto.Float64(bestValue),
 			Annotation: &pb.Annotation{
-				NumExamples: proto.Int64(int64(len(examples))),
-				AverageGain: proto.Float64(bestSplit.gain / float64(len(examples))),
+				NumExamples:  proto.Int64(int64(len(examples))),
+				AverageGain:  proto.Float64(bestSplit.gain / float64(len(examples))),
+				LeftFraction: proto.Float64(float64(bestSplit.index) / float64(len(examples))),
 			},
 		}
 

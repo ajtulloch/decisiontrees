@@ -45,6 +45,10 @@ message TreeNode {
 message Annotation {
   optional int64 numExamples = 1;
   optional double averageGain = 2;
+
+  // Proportion of examples on the left branch.
+  // Used to annotate branch probabilities in compiled tree models 
+  optional double leftFraction = 3;
 }
 
 message Forest {

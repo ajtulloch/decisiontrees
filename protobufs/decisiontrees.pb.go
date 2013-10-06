@@ -338,8 +338,11 @@ func (m *TreeNode) GetAnnotation() *Annotation {
 }
 
 type Annotation struct {
-	NumExamples      *int64   `protobuf:"varint,1,opt,name=numExamples" json:"numExamples,omitempty" bson:"numExamples,omitempty"`
-	AverageGain      *float64 `protobuf:"fixed64,2,opt,name=averageGain" json:"averageGain,omitempty" bson:"averageGain,omitempty"`
+	NumExamples *int64   `protobuf:"varint,1,opt,name=numExamples" json:"numExamples,omitempty" bson:"numExamples,omitempty"`
+	AverageGain *float64 `protobuf:"fixed64,2,opt,name=averageGain" json:"averageGain,omitempty" bson:"averageGain,omitempty"`
+	// Proportion of examples on the left branch.
+	// Used to annotate branch probabilities in compiled tree models
+	LeftFraction     *float64 `protobuf:"fixed64,3,opt,name=leftFraction" json:"leftFraction,omitempty" bson:"leftFraction,omitempty"`
 	XXX_unrecognized []byte   `json:"-" bson:"-"`
 }
 
@@ -357,6 +360,13 @@ func (m *Annotation) GetNumExamples() int64 {
 func (m *Annotation) GetAverageGain() float64 {
 	if m != nil && m.AverageGain != nil {
 		return *m.AverageGain
+	}
+	return 0
+}
+
+func (m *Annotation) GetLeftFraction() float64 {
+	if m != nil && m.LeftFraction != nil {
+		return *m.LeftFraction
 	}
 	return 0
 }
@@ -473,7 +483,7 @@ func (m *LossFunctionConfig) GetLossFunction() LossFunction {
 	if m != nil && m.LossFunction != nil {
 		return *m.LossFunction
 	}
-	return 0
+	return LossFunction_LOGIT
 }
 
 func (m *LossFunctionConfig) GetHuberAlpha() float64 {
@@ -598,7 +608,7 @@ func (m *ForestConfig) GetAlgorithm() Algorithm {
 	if m != nil && m.Algorithm != nil {
 		return *m.Algorithm
 	}
-	return 0
+	return Algorithm_BOOSTING
 }
 
 type GridFsConfig struct {
@@ -649,7 +659,7 @@ func (m *DataSourceConfig) GetDataSource() DataSource {
 	if m != nil && m.DataSource != nil {
 		return *m.DataSource
 	}
-	return 0
+	return DataSource_GRIDFS
 }
 
 func (m *DataSourceConfig) GetGridFsConfig() *GridFsConfig {
@@ -753,7 +763,7 @@ func (m *TrainingRow) GetTrainingStatus() TrainingStatus {
 	if m != nil && m.TrainingStatus != nil {
 		return *m.TrainingStatus
 	}
-	return 0
+	return TrainingStatus_UNCLAIMED
 }
 
 func (m *TrainingRow) GetTrainingResults() *TrainingResults {
